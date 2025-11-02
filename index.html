@@ -3,1139 +3,2250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игра на удачу</title>
+    <title>Шаг за шагом</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: white;
-            color: #333;
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            color: #333;
+            overflow-x: hidden;
         }
         
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: #f9f9f9;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e0e0e0;
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
         header {
             text-align: center;
-            margin-bottom: 30px;
+            padding: 20px 0;
+            margin-bottom: 20px;
         }
         
         h1 {
-            color: #2c3e50;
-            margin-bottom: 15px;
+            font-size: 3rem;
+            color: #2e7d32;
+            text-shadow: 0 0 10px rgba(46, 125, 50, 0.2);
+        }
+        
+        .game-content {
+            display: flex;
+            flex: 1;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .right-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
         
         .stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            font-size: 18px;
-            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            background-color: rgba(46, 125, 50, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
         
-        .coins {
-            color: #e67e22;
-            font-weight: bold;
-        }
-        
-        .cooldown {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        
-        .result-area {
+        .stat {
             text-align: center;
-            margin: 30px 0;
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            padding: 10px;
         }
         
-        .result-label {
-            font-size: 18px;
-            color: #7f8c8d;
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-top: 5px;
+        }
+        
+        .step-btn {
+            padding: 20px;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .step-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .step-btn:active {
+            transform: translateY(2px);
+        }
+        
+        .step-btn:disabled {
+            background: #bdbdbd;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .battle-section, .shop-section, .level-up-section, .inventory-section, .ore-section, .end-game-section {
+            display: none;
+            background-color: rgba(46, 125, 50, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .battle-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .enemy-info {
+            font-weight: bold;
+            color: #d32f2f;
             margin-bottom: 10px;
         }
         
-        .result {
-            font-size: 36px;
-            font-weight: bold;
-            padding: 15px 30px;
-            margin: 10px 0;
-            transition: all 0.3s;
-            text-align: center;
-            width: 100%;
+        .health-bars {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 20px;
         }
         
-        .spin-btn {
-            background: #3498db;
+        .health-container {
+            flex: 1;
+        }
+        
+        .health-label {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .enemy-health, .player-health {
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .health-bar {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s;
+        }
+        
+        .enemy-health .health-bar {
+            background: linear-gradient(to right, #d32f2f, #f44336);
+        }
+        
+        .player-health .health-bar {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+        }
+        
+        .dodge-info {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.2rem;
+        }
+        
+        .battle-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            position: relative;
+            transition: all 0.5s;
+        }
+        
+        .battle-btn {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .attack-btn, .defend-btn {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+        }
+        
+        .dodge-btn {
+            background: linear-gradient(to right, #ff9800, #ffb74d);
+            color: white;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .battle-btn:hover:not(:disabled), .dodge-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .battle-btn:disabled, .dodge-btn:disabled {
+            background: #bdbdbd;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .black-attack {
+            background: #000 !important;
+            color: white;
+        }
+        
+        .weapon-minigame {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        .minigame-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #2e7d32;
             color: white;
             border: none;
-            padding: 20px 50px;
-            font-size: 22px;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 20px auto;
-            display: block;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-        }
-        
-        .spin-btn:hover:not(:disabled) {
-            background: #2980b9;
-            transform: scale(1.05);
-        }
-        
-        .spin-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-        
-        .tabs {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-        
-        .tab-btn {
-            background: #e0e0e0;
-            border: none;
-            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s;
         }
         
-        .tab-btn.active {
-            background: #3498db;
-            color: white;
+        .minigame-timer {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
         }
         
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
+        .timer-bar {
+            height: 100%;
+            background: #4caf50;
+            width: 100%;
         }
         
         .shop-items {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
         
         .shop-item {
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #e0e0e0;
+            background: rgba(46, 125, 50, 0.15);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .shop-item h3 {
+            margin-bottom: 10px;
+            color: #2e7d32;
         }
         
         .shop-btn {
-            background: #2ecc71;
+            padding: 12px 20px;
+            width: 100%;
+            background: linear-gradient(to right, #2e7d32, #4caf50);
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
+            margin-top: 15px;
             transition: all 0.3s;
-            white-space: nowrap;
-            margin-left: 10px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
         }
         
         .shop-btn:hover:not(:disabled) {
-            background: #27ae60;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
         
         .shop-btn:disabled {
-            background: #bdc3c7;
+            background: #bdbdbd;
             cursor: not-allowed;
         }
         
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
+        .shop-actions {
+            display: flex;
+            justify-content: center;
             margin-top: 20px;
         }
         
-        .inventory-item {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .inventory-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .sphere {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin: 0 auto 5px;
-        }
-        
-        .craft-item {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .craft-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .craft-recipe {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .craft-sphere {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        
-        .craft-btn {
-            background: #9b59b6;
+        .continue-btn {
+            padding: 15px 30px;
+            background: linear-gradient(to right, #ff9800, #ffb74d);
             color: white;
             border: none;
-            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .continue-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message-container {
+            background-color: rgba(46, 125, 50, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+        
+        .enemy-turn {
+            background-color: rgba(211, 47, 47, 0.1);
+        }
+        
+        .player-turn {
+            background-color: rgba(46, 125, 50, 0.1);
+        }
+        
+        .inventory-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .inventory-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .inventory-btn {
+            padding: 8px 15px;
+            background: #2e7d32;
+            color: white;
+            border: none;
             border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .level-up-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .level-up-btn {
+            padding: 15px;
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        .ore-section {
+            text-align: center;
+        }
+        
+        .ore-info {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .ore-image {
+            font-size: 5rem;
+            margin: 20px 0;
+        }
+        
+        .mine-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, #ff9800, #ffb74d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        .circles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .circle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: red;
+            border-radius: 50%;
+            cursor: pointer;
+            pointer-events: all;
+        }
+        
+        .end-game-section {
+            text-align: center;
+        }
+        
+        .end-game-title {
+            font-size: 3rem;
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+        
+        .end-game-stats {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .restart-btn {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            border: none;
+            border-radius: 10px;
             cursor: pointer;
         }
         
-        .craft-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-        
-        .discovered {
-            margin-top: 30px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .discovered h3 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        
-        .items-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-        
-        .item {
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 14px;
-            background: #f1f1f1;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .item-chance {
-            font-size: 12px;
-            color: #7f8c8d;
-            background: #e0e0e0;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-        
-        /* Цвета для различных типов предметов */
-        .common { color: #95a5a6; }
-        .common-sphere { background: #95a5a6; }
-        .uncommon { color: #3498db; }
-        .uncommon-sphere { background: #3498db; }
-        .rare { color: #2ecc71; }
-        .rare-sphere { background: #2ecc71; }
-        .improved { color: #f1c40f; }
-        .improved-sphere { background: #f1c40f; }
-        .epic { color: #e67e22; }
-        .epic-sphere { background: #e67e22; }
-        .legendary { color: #e74c3c; }
-        .legendary-sphere { background: #e74c3c; }
-        .mythical { color: #9b59b6; }
-        .mythical-sphere { background: #9b59b6; }
-        .shadow-light { 
-            background: linear-gradient(to right, #2c3e50, #8e44ad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .shadow-light-sphere { 
-            background: linear-gradient(45deg, #2c3e50, #8e44ad);
-        }
-        .purple { color: #8e44ad; }
-        .purple-sphere { background: #8e44ad; }
-        .king { color: #d35400; }
-        .king-sphere { background: #d35400; }
-        .mega { color: #c0392b; }
-        .mega-sphere { background: #c0392b; }
-        .angel { color: #16a085; }
-        .angel-sphere { background: #16a085; }
-        .divine { 
-            background: linear-gradient(to right, #2980b9, #e74c3c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .divine-sphere { 
-            background: linear-gradient(45deg, #2980b9, #e74c3c);
-        }
-        .eternity { color: #2c3e50; }
-        .eternity-sphere { background: #2c3e50; }
-        .heart { color: #e74c3c; }
-        .heart-sphere { background: #e74c3c; }
-        .error { color: #8e44ad; }
-        .error-sphere { background: #8e44ad; }
-        
-        /* Анимации */
-        .animation-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            flex-direction: column;
-        }
-        
-        .divine-text {
-            font-size: 60px;
-            font-weight: bold;
-            color: #e74c3c;
-            animation: shake 0.1s infinite;
-        }
-        
-        .eternity-text {
-            font-size: 60px;
-            font-weight: bold;
-            color: #2c3e50;
-            animation: pulse 2s infinite;
-        }
-        
-        .heart-text {
-            font-size: 60px;
-            font-weight: bold;
-            color: #e74c3c;
-            animation: heartbeat 1s infinite;
-        }
-        
-        .error-text {
-            font-size: 60px;
-            font-weight: bold;
-            color: #8e44ad;
-            animation: glitch 1s infinite;
-        }
-        
-        @keyframes shake {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(5px, 5px) rotate(5deg); }
-            50% { transform: translate(0, 0) rotate(0deg); }
-            75% { transform: translate(-5px, 5px) rotate(-5deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes heartbeat {
-            0% { transform: scale(1); }
-            25% { transform: scale(1.1); }
-            50% { transform: scale(1); }
-            75% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-5px, 5px); }
-            40% { transform: translate(-5px, -5px); }
-            60% { transform: translate(5px, 5px); }
-            80% { transform: translate(5px, -5px); }
-            100% { transform: translate(0); }
-        }
-        
-        .explosion {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            animation: explode 1s forwards;
-        }
-        
-        @keyframes explode {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(20); opacity: 0; }
-        }
-        
-        .white-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 101;
-            flex-direction: column;
-        }
-        
-        .black-text {
-            font-size: 24px;
-            color: black;
-            text-align: center;
-            max-width: 80%;
-        }
-        
+        /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
-            .stats {
+            .game-content {
                 flex-direction: column;
-                gap: 10px;
             }
             
-            .result {
-                font-size: 28px;
-                padding: 10px 20px;
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
             }
             
-            .spin-btn {
-                padding: 15px 30px;
-                font-size: 18px;
+            .battle-actions {
+                grid-template-columns: 1fr;
             }
             
-            .inventory-grid {
-                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="game-container">
         <header>
-            <h1>ИГРА НА УДАЧУ</h1>
-            <div class="stats">
-                <div class="coins">Монеты: <span id="coins">0</span></div>
-                <div class="cooldown">Перезарядка: <span id="cooldown">5.0</span> сек</div>
-            </div>
+            <h1>Шаг за шагом</h1>
         </header>
         
-        <div class="result-area">
-            <div class="result-label">Результат:</div>
-            <div class="result" id="result">Нажмите "Крутить" чтобы начать</div>
-        </div>
-        
-        <button class="spin-btn" id="spin-btn">Крутить (5.0 сек)</button>
-        
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="shop">Магазин</button>
-            <button class="tab-btn" data-tab="inventory">Инвентарь</button>
-            <button class="tab-btn" data-tab="craft">Крафт</button>
-        </div>
-        
-        <div class="tab-content active" id="shop">
-            <h2>Магазин улучшений</h2>
-            <div class="shop-items">
-                <div class="shop-item">
-                    <span>Уменьшить перезарядку на 0.5 сек</span>
-                    <button class="shop-btn" id="upgrade-cooldown">25 монет</button>
+        <div class="game-content">
+            <div class="left-panel">
+                <div class="stats">
+                    <div class="stat">
+                        <div>Шаги</div>
+                        <div class="stat-value" id="steps">0</div>
+                    </div>
+                    <div class="stat">
+                        <div>Монеты</div>
+                        <div class="stat-value" id="coins">0</div>
+                    </div>
+                    <div class="stat">
+                        <div>Здоровье</div>
+                        <div class="stat-value" id="health">5/5</div>
+                    </div>
+                    <div class="stat">
+                        <div>Урон</div>
+                        <div class="stat-value" id="damage">1</div>
+                    </div>
+                    <div class="stat">
+                        <div>Уровень</div>
+                        <div class="stat-value" id="level">1</div>
+                    </div>
+                    <div class="stat">
+                        <div>Опыт</div>
+                        <div class="stat-value" id="exp">0/100</div>
+                    </div>
+                </div>
+                
+                <button class="step-btn" id="stepBtn">Сделать шаг</button>
+                
+                <div class="inventory-section" id="inventorySection">
+                    <div class="battle-info">Инвентарь</div>
+                    <div class="inventory-items" id="inventoryItems">
+                        <!-- Инвентарь будет заполняться динамически -->
+                    </div>
+                </div>
+                
+                <div class="message-container" id="message">
+                    Сделайте шаг, чтобы начать игру!
                 </div>
             </div>
             
-            <div class="luck-items">
-                <h3>Улучшение удачи</h3>
-                <div class="shop-item">
-                    <span>Удалить Обычный</span>
-                    <button class="shop-btn" id="remove-common">100 монет</button>
+            <div class="right-panel">
+                <div class="battle-section" id="battleSection">
+                    <div class="battle-info">
+                        <div class="enemy-info" id="enemyInfo">На вас напал враг!</div>
+                    </div>
+                    
+                    <div class="health-bars">
+                        <div class="health-container">
+                            <div class="health-label">Враг: <span id="enemyHp">5</span>/<span id="enemyMaxHp">5</span> HP</div>
+                            <div class="enemy-health">
+                                <div class="health-bar" id="enemyHealthBar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="health-container">
+                            <div class="health-label">Вы: <span id="playerHp">5</span>/<span id="playerMaxHp">5</span> HP</div>
+                            <div class="player-health">
+                                <div class="health-bar" id="playerHealthBar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dodge-info">
+                        Увороты: <span id="dodgeCount">3</span>/3
+                    </div>
+                    
+                    <div class="battle-actions" id="playerActions">
+                        <button class="battle-btn attack-btn" id="attackBtn">Атаковать</button>
+                        <button class="battle-btn defend-btn" id="defendBtn">Защита</button>
+                        <button class="dodge-btn" id="dodgeBtn">Увернуться</button>
+                    </div>
+                    
+                    <div class="weapon-minigame" id="weaponMinigame">
+                        <!-- Мини-игры для оружия будут здесь -->
+                    </div>
                 </div>
-                <div class="shop-item">
-                    <span>Удалить Необычный</span>
-                    <button class="shop-btn" id="remove-uncommon">200 монет</button>
+                
+                <div class="shop-section" id="shopSection">
+                    <div class="battle-info">Магазин</div>
+                    
+                    <div class="shop-items" id="shopItems">
+                        <!-- Товары магазина будут заполняться динамически -->
+                    </div>
+                    
+                    <div class="shop-actions">
+                        <button class="continue-btn" id="continueBtn">Продолжить путь</button>
+                    </div>
                 </div>
-                <div class="shop-item">
-                    <span>Удалить Редкий</span>
-                    <button class="shop-btn" id="remove-rare">325 монет</button>
+                
+                <div class="ore-section" id="oreSection">
+                    <div class="battle-info">Золотая руда!</div>
+                    <div class="ore-info">Ударьте киркой по руде 30 раз, чтобы добыть её</div>
+                    <div class="ore-image">⛏️</div>
+                    <div class="ore-info">Ударов: <span id="mineCount">0</span>/30</div>
+                    <button class="mine-btn" id="mineBtn">Добывать</button>
+                    <button class="continue-btn" id="oreContinueBtn">Продолжить путь</button>
                 </div>
-                <div class="shop-item">
-                    <span>Удалить Повышенный</span>
-                    <button class="shop-btn" id="remove-improved">500 монет</button>
+                
+                <div class="level-up-section" id="levelUpSection">
+                    <div class="battle-info">Повышение уровня!</div>
+                    <div class="level-up-options">
+                        <button class="level-up-btn" id="levelUpDodge">+1 уворот</button>
+                        <button class="level-up-btn" id="levelUpCoins">+3 монеты за шаг</button>
+                        <button class="level-up-btn" id="levelUpBonus">+100 монет</button>
+                    </div>
                 </div>
-                <div class="shop-item">
-                    <span>Удалить Эпический</span>
-                    <button class="shop-btn" id="remove-epic">1000 монет</button>
+                
+                <div class="end-game-section" id="endGameSection">
+                    <div class="end-game-title">ПОБЕДА!</div>
+                    <div class="end-game-stats">
+                        <p>Вы достигли 1000 шагов и победили!</p>
+                        <p>Ваш финальный счет: <span id="finalScore">0</span> монет</p>
+                        <p>Ваш уровень: <span id="finalLevel">1</span></p>
+                    </div>
+                    <button class="restart-btn" id="restartBtn">Начать заново</button>
                 </div>
-                <div class="shop-item">
-                    <span>Удалить Легендарный</span>
-                    <button class="shop-btn" id="remove-legendary">2000 монет</button>
-                </div>
-                <div class="shop-item">
-                    <span>Удалить Мифический</span>
-                    <button class="shop-btn" id="remove-mythical">3500 монет</button>
-                </div>
-                <div class="shop-item">
-                    <span>Удалить Тень/Свет</span>
-                    <button class="shop-btn" id="remove-shadow-light">5000 монет</button>
-                </div>
-                <div class="shop-item">
-                    <span>Удалить Фиолетовый</span>
-                    <button class="shop-btn" id="remove-purple">7500 монет</button>
-                </div>
-                <div class="shop-item">
-                    <span>Удалить КОРОЛЬ</span>
-                    <button class="shop-btn" id="remove-king">10000 монет</button>
-                </div>
-                <div class="shop-item">
-                    <span>Удалить АНГЕЛ</span>
-                    <button class="shop-btn" id="remove-angel">25000 монет</button>
-                </div>
-                <div class="shop-item">
-                    <span>Удалить БОЖЕСТВЕННЫЙ</span>
-                    <button class="shop-btn" id="remove-divine">50000 монет</button>
-                </div>
-                <div class="shop-item">
-                    <span>Удалить СЕРДЦЕ</span>
-                    <button class="shop-btn" id="remove-heart">100000 монет</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="tab-content" id="inventory">
-            <h2>Инвентарь</h2>
-            <div class="inventory-grid" id="inventory-grid">
-                <!-- Здесь будут отображаться предметы инвентаря -->
-            </div>
-        </div>
-        
-        <div class="tab-content" id="craft">
-            <h2>Крафт</h2>
-            <div class="craft-item">
-                <div class="craft-title">Большая сфера обычного</div>
-                <div class="craft-recipe">
-                    <span>10x</span><div class="craft-sphere common-sphere"></div><span>Обычный</span>
-                </div>
-                <button class="craft-btn" id="craft-common-large">Создать</button>
-            </div>
-            <div class="craft-item">
-                <div class="craft-title">Большая сфера необычного</div>
-                <div class="craft-recipe">
-                    <span>10x</span><div class="craft-sphere uncommon-sphere"></div><span>Необычный</span>
-                </div>
-                <button class="craft-btn" id="craft-uncommon-large">Создать</button>
-            </div>
-            <div class="craft-item">
-                <div class="craft-title">Зелье монет</div>
-                <div class="craft-recipe">
-                    <span>1x</span><div class="craft-sphere common-sphere"></div><span>Большая обычная</span>
-                    <span>+ 1x</span><div class="craft-sphere uncommon-sphere"></div><span>Большая необычная</span>
-                </div>
-                <button class="craft-btn" id="craft-coin-potion">Создать</button>
-            </div>
-            <!-- Добавьте другие рецепты крафта здесь -->
-        </div>
-        
-        <div class="discovered">
-            <h3>Открытые предметы</h3>
-            <div class="items-list" id="items-list">
-                <!-- Здесь будут отображаться открытые предметы -->
             </div>
         </div>
     </div>
 
+    <div class="circles-container" id="circlesContainer">
+        <!-- Кружки для способности босса будут добавляться сюда -->
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Элементы DOM
-            const spinBtn = document.getElementById('spin-btn');
-            const result = document.getElementById('result');
-            const coinsElement = document.getElementById('coins');
-            const cooldownElement = document.getElementById('cooldown');
-            const itemsList = document.getElementById('items-list');
-            const inventoryGrid = document.getElementById('inventory-grid');
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
+        // Игровые переменные
+        let steps = 0;
+        let coins = 0;
+        let playerHealth = 5;
+        let playerMaxHealth = 5;
+        let playerDamage = 1;
+        let playerBaseDamage = 1;
+        let enemyHealth = 5;
+        let enemyMaxHealth = 5;
+        let enemyDamage = 1;
+        let enemyType = 'обычный';
+        let dodgesLeft = 3;
+        let maxDodges = 3;
+        let isPlayerTurn = true;
+        let isBattleActive = false;
+        let isShopActive = false;
+        let isLevelUpActive = false;
+        let isOreActive = false;
+        let currentWeapon = 'кулаки';
+        let hasIronArmor = false;
+        let hasDiamondArmor = false;
+        let hasGodArmor = false;
+        let hasPickaxe = false;
+        let experience = 0;
+        let level = 1;
+        let expToNextLevel = 100;
+        let coinsPerStep = 1;
+        let inventory = [];
+        let blackAttackActive = false;
+        let blackInventoryActive = false;
+        let buttonsMoved = false;
+        let originalButtonOrder = [];
+        let mineCount = 0;
+        let toxicDamageInterval;
+        let bossAbilityInterval;
+        let circlesInterval;
+        
+        // Элементы DOM
+        const stepsElement = document.getElementById('steps');
+        const coinsElement = document.getElementById('coins');
+        const healthElement = document.getElementById('health');
+        const damageElement = document.getElementById('damage');
+        const levelElement = document.getElementById('level');
+        const expElement = document.getElementById('exp');
+        const stepBtn = document.getElementById('stepBtn');
+        const battleSection = document.getElementById('battleSection');
+        const shopSection = document.getElementById('shopSection');
+        const levelUpSection = document.getElementById('levelUpSection');
+        const inventorySection = document.getElementById('inventorySection');
+        const oreSection = document.getElementById('oreSection');
+        const endGameSection = document.getElementById('endGameSection');
+        const enemyInfoElement = document.getElementById('enemyInfo');
+        const enemyHpElement = document.getElementById('enemyHp');
+        const enemyMaxHpElement = document.getElementById('enemyMaxHp');
+        const playerHpElement = document.getElementById('playerHp');
+        const playerMaxHpElement = document.getElementById('playerMaxHp');
+        const enemyHealthBar = document.getElementById('enemyHealthBar');
+        const playerHealthBar = document.getElementById('playerHealthBar');
+        const dodgeCountElement = document.getElementById('dodgeCount');
+        const playerActions = document.getElementById('playerActions');
+        const attackBtn = document.getElementById('attackBtn');
+        const defendBtn = document.getElementById('defendBtn');
+        const dodgeBtn = document.getElementById('dodgeBtn');
+        const weaponMinigame = document.getElementById('weaponMinigame');
+        const messageElement = document.getElementById('message');
+        const shopItemsElement = document.getElementById('shopItems');
+        const continueBtn = document.getElementById('continueBtn');
+        const inventoryItemsElement = document.getElementById('inventoryItems');
+        const levelUpDodgeBtn = document.getElementById('levelUpDodge');
+        const levelUpCoinsBtn = document.getElementById('levelUpCoins');
+        const levelUpBonusBtn = document.getElementById('levelUpBonus');
+        const mineBtn = document.getElementById('mineBtn');
+        const mineCountElement = document.getElementById('mineCount');
+        const oreContinueBtn = document.getElementById('oreContinueBtn');
+        const circlesContainer = document.getElementById('circlesContainer');
+        const finalScoreElement = document.getElementById('finalScore');
+        const finalLevelElement = document.getElementById('finalLevel');
+        const restartBtn = document.getElementById('restartBtn');
+        
+        // Магазин товаров (ОБНОВЛЕНО - добавлена кирка)
+        const shopItems = [
+            { id: 'maxHp', name: '+1 к макс HP', price: 25, description: 'Увеличивает максимальное здоровье на 1', type: 'stat' },
+            { id: 'pickaxe', name: 'Кирка', price: 10, description: 'Позволяет добывать золотую руду', type: 'tool' },
+            { id: 'glove', name: 'Перчатка', price: 50, description: 'Увеличивает урон до 2', type: 'weapon' },
+            { id: 'healthSphere', name: 'Сфера жизни', price: 50, description: 'Лечит 15 HP', type: 'consumable' },
+            { id: 'rageSphere', name: 'Сфера ярости', price: 50, description: 'Удваивает урон следующей атаки', type: 'consumable' },
+            { id: 'comboSphere', name: 'Сфера комбо', price: 70, description: '+10 HP и след атака в 2 раза больше урона', type: 'consumable' },
+            { id: 'sword', name: 'Меч', price: 250, description: 'Наносит 4 урона (требует мини-игру)', type: 'weapon' },
+            { id: 'ironArmor', name: 'Железная броня', price: 200, description: 'Уменьшает урон врагов на 20%', type: 'armor' },
+            { id: 'baton', name: 'Батон', price: 325, description: 'Лечит 10 HP + следующий урон врага уменьшен вдвое', type: 'consumable' },
+            { id: 'mushroomBottle', name: 'Бутылочка опята', price: 100, description: 'Даёт 50 опыта', type: 'consumable' },
+            { id: 'godSphere', name: 'Сфера бога', price: 333, description: 'Жертвует 5 HP, следующая атака наносит 5x урон', type: 'consumable' },
+            { id: 'spear', name: 'Копьё', price: 500, description: 'Наносит 3-6 урона (требует мини-игру)', type: 'weapon' },
+            { id: 'pistol', name: 'Пистолет', price: 750, description: 'Наносит 5 урона (требует мини-игру)', type: 'weapon' },
+            { id: 'eternityGlove', name: 'Перчатка вечности', price: 1500, description: 'Наносит 10 урона', type: 'weapon' },
+            { id: 'diamondArmor', name: 'Броня алмаза', price: 1000, description: 'Уменьшает урон врагов на 40%', type: 'armor' },
+            { id: 'godSword', name: 'Меч бога', price: 2500, description: 'Наносит 20 урона (требует мини-игру)', type: 'weapon' },
+            { id: 'godArmor', name: 'Броня бога', price: 3000, description: 'Уменьшает урон врагов на 60%', type: 'armor' }
+        ];
+        
+        // Функция обновления интерфейса
+        function updateUI() {
+            stepsElement.textContent = steps;
+            coinsElement.textContent = coins;
+            healthElement.textContent = `${playerHealth}/${playerMaxHealth}`;
+            damageElement.textContent = playerDamage;
+            levelElement.textContent = level;
+            expElement.textContent = `${experience}/${expToNextLevel}`;
             
-            // Кнопки магазина
-            const upgradeCooldownBtn = document.getElementById('upgrade-cooldown');
-            const removeCommonBtn = document.getElementById('remove-common');
-            const removeUncommonBtn = document.getElementById('remove-uncommon');
-            const removeRareBtn = document.getElementById('remove-rare');
-            const removeImprovedBtn = document.getElementById('remove-improved');
-            const removeEpicBtn = document.getElementById('remove-epic');
-            const removeLegendaryBtn = document.getElementById('remove-legendary');
-            const removeMythicalBtn = document.getElementById('remove-mythical');
-            const removeShadowLightBtn = document.getElementById('remove-shadow-light');
-            const removePurpleBtn = document.getElementById('remove-purple');
-            const removeKingBtn = document.getElementById('remove-king');
-            const removeAngelBtn = document.getElementById('remove-angel');
-            const removeDivineBtn = document.getElementById('remove-divine');
-            const removeHeartBtn = document.getElementById('remove-heart');
+            // Обновление здоровья в бою
+            if (isBattleActive) {
+                enemyHpElement.textContent = enemyHealth;
+                enemyMaxHpElement.textContent = enemyMaxHealth;
+                playerHpElement.textContent = playerHealth;
+                playerMaxHpElement.textContent = playerMaxHealth;
+                enemyHealthBar.style.width = `${(enemyHealth / enemyMaxHealth) * 100}%`;
+                playerHealthBar.style.width = `${(playerHealth / playerMaxHealth) * 100}%`;
+                dodgeCountElement.textContent = `${dodgesLeft}/${maxDodges}`;
+                
+                // Обновление доступности кнопки уворота
+                dodgeBtn.disabled = dodgesLeft <= 0 || isPlayerTurn;
+            }
             
-            // Кнопки крафта
-            const craftCommonLargeBtn = document.getElementById('craft-common-large');
-            const craftUncommonLargeBtn = document.getElementById('craft-uncommon-large');
-            const craftCoinPotionBtn = document.getElementById('craft-coin-potion');
+            // Обновление инвентаря
+            updateInventory();
+        }
+        
+        // Функция для показа сообщения
+        function showMessage(text, isPlayerTurn = true) {
+            messageElement.textContent = text;
+            messageElement.className = 'message-container ' + (isPlayerTurn ? 'player-turn' : 'enemy-turn');
+        }
+        
+        // Функция для совершения шага
+        function makeStep() {
+            if (isShopActive) {
+                hideShop();
+                return;
+            }
             
-            // Игровые переменные
-            let coins = 0;
-            let cooldown = 5.0;
-            let cooldownUpgrades = 0;
-            let canSpin = true;
-            let discoveredItems = new Map();
-            let inventory = {};
-            let activeEffects = {
-                coinMultiplier: 1,
-                nextItem: null,
-                sphereChance: 0,
-                cooldownReduction: 0
-            };
+            if (isLevelUpActive) {
+                return;
+            }
             
-            // Шансы выпадения предметов (в порядке убывания редкости)
-            const items = [
-                { name: "Обычный", chance: 1/3, reward: 1, removed: false, color: "common", sphere: "common-sphere" },
-                { name: "Необычный", chance: 1/5, reward: 3, removed: false, color: "uncommon", sphere: "uncommon-sphere" },
-                { name: "Редкий", chance: 1/8, reward: 5, removed: false, color: "rare", sphere: "rare-sphere" },
-                { name: "Повышенный", chance: 1/12, reward: 8, removed: false, color: "improved", sphere: "improved-sphere" },
-                { name: "Эпический", chance: 1/15, reward: 10, removed: false, color: "epic", sphere: "epic-sphere" },
-                { name: "Легендарный", chance: 1/20, reward: 15, removed: false, color: "legendary", sphere: "legendary-sphere" },
-                { name: "Мифический", chance: 1/25, reward: 25, removed: false, color: "mythical", sphere: "mythical-sphere" },
-                { name: "Тень/Свет", chance: 1/50, reward: 40, removed: false, color: "shadow-light", sphere: "shadow-light-sphere" },
-                { name: "Фиолетовый", chance: 1/75, reward: 60, removed: false, color: "purple", sphere: "purple-sphere" },
-                { name: "КОРОЛЬ", chance: 1/100, reward: 90, removed: false, color: "king", sphere: "king-sphere" },
-                { name: "МЕГА", chance: 1/150, reward: 125, removed: false, color: "mega", sphere: "mega-sphere" },
-                { name: "АНГЕЛ", chance: 1/200, reward: 200, removed: false, color: "angel", sphere: "angel-sphere" },
-                { name: "БОЖЕСТВЕННЫЙ", chance: 1/500, reward: 500, removed: false, color: "divine", sphere: "divine-sphere" },
-                { name: "ВЕЧНОСТЬ", chance: 1/3333, reward: 2500, removed: false, color: "eternity", sphere: "eternity-sphere" },
-                { name: "СЕРДЦЕ", chance: 1/1666, reward: 1000, removed: false, color: "heart", sphere: "heart-sphere" },
-                { name: "ERROR", chance: 1/5000, reward: 4004, removed: false, color: "error", sphere: "error-sphere" }
-            ];
+            if (isOreActive) {
+                hideOre();
+                return;
+            }
             
-            // Инициализация инвентаря
-            function initInventory() {
-                for (const item of items) {
-                    inventory[item.name] = 0;
+            steps++;
+            
+            // Проверка на конец игры
+            if (steps >= 1000) {
+                endGame();
+                return;
+            }
+            
+            // На 35 шаге даем бонус
+            if (steps === 35) {
+                coins += 100;
+                showMessage(`Вы достигли 35 шагов! Получено 100 монет.`);
+            }
+            
+            // Случайное количество монет за шаг
+            const coinsEarned = Math.floor(Math.random() * 25) + coinsPerStep;
+            coins += coinsEarned;
+            
+            // Получение опыта за шаг
+            gainExperience(5);
+            
+            showMessage(`Вы сделали шаг! Получено монет: ${coinsEarned}`);
+            
+            // Проверка на золотую руду (5% шанс, если есть кирка)
+            if (hasPickaxe && Math.random() < 0.05) {
+                showOre();
+                return;
+            }
+            
+            // Проверка на появление магазина (каждые 10 шагов, кроме 50, 100, 250, 500, 999)
+            if (steps % 10 === 0 && ![50, 100, 250, 500, 999].includes(steps)) {
+                showShop();
+                return;
+            }
+            
+            // Проверка на боссов
+            if (steps === 50) {
+                startBossBattle('Король слизней');
+                return;
+            }
+            
+            if (steps === 100) {
+                startBossBattle('Теневой лорд');
+                return;
+            }
+            
+            if (steps === 250) {
+                startBossBattle('ERROR');
+                return;
+            }
+            
+            if (steps === 500) {
+                startBossBattle('БОГ ЗЛА');
+                return;
+            }
+            
+            if (steps === 999) {
+                startBossBattle('БЕСКОНЕЧНОСТЬ');
+                return;
+            }
+            
+            // Шанс встретить врага (20%)
+            if (Math.random() < 0.2) {
+                startBattle();
+            }
+            
+            updateUI();
+        }
+        
+        // Функция для начала обычного боя
+        function startBattle() {
+            isBattleActive = true;
+            battleSection.style.display = 'block';
+            stepBtn.disabled = true;
+            inventorySection.style.display = 'block';
+            
+            // Определение типа врага в зависимости от шагов
+            let enemyChance = Math.random();
+            let hpMultiplier = 1;
+            
+            // На 200+ шагах враги имеют в 2 раза больше HP
+            if (steps >= 200) {
+                hpMultiplier = 2;
+            }
+            
+            if (steps >= 500) {
+                // После 500 шагов
+                if (enemyChance < 0.1) {
+                    // Токсичный (усиленный)
+                    enemyType = 'токсичный';
+                    enemyMaxHealth = 75 * hpMultiplier;
+                    enemyHealth = 75 * hpMultiplier;
+                    enemyDamage = 2;
+                } else if (enemyChance < 0.25) {
+                    // Пожиратель душ
+                    enemyType = 'пожиратель душ';
+                    enemyMaxHealth = 50 * hpMultiplier;
+                    enemyHealth = 50 * hpMultiplier;
+                    enemyDamage = 3;
+                } else if (enemyChance < 0.4) {
+                    // Слизень
+                    enemyType = 'слизень';
+                    enemyMaxHealth = 60 * hpMultiplier;
+                    enemyHealth = 60 * hpMultiplier;
+                    enemyDamage = 2;
+                } else {
+                    // Обычный враг
+                    enemyType = 'обычный';
+                    enemyMaxHealth = 45 * hpMultiplier;
+                    enemyHealth = 45 * hpMultiplier;
+                    enemyDamage = 1;
                 }
-                inventory["Большая сфера обычного"] = 0;
-                inventory["Большая сфера необычного"] = 0;
-                inventory["Зелье монет"] = 0;
-                // Добавьте другие крафтовые предметы здесь
+            } else if (steps >= 450) {
+                // После 450 шагов
+                if (enemyChance < 0.1) {
+                    // Токсичный (усиленный)
+                    enemyType = 'токсичный';
+                    enemyMaxHealth = 75 * hpMultiplier;
+                    enemyHealth = 75 * hpMultiplier;
+                    enemyDamage = 2;
+                } else if (enemyChance < 0.25) {
+                    // Пожиратель душ
+                    enemyType = 'пожиратель душ';
+                    enemyMaxHealth = 50 * hpMultiplier;
+                    enemyHealth = 50 * hpMultiplier;
+                    enemyDamage = 3;
+                } else if (enemyChance < 0.4) {
+                    // Слизень
+                    enemyType = 'слизень';
+                    enemyMaxHealth = 60 * hpMultiplier;
+                    enemyHealth = 60 * hpMultiplier;
+                    enemyDamage = 2;
+                } else {
+                    // Обычный враг
+                    enemyType = 'обычный';
+                    enemyMaxHealth = 45 * hpMultiplier;
+                    enemyHealth = 45 * hpMultiplier;
+                    enemyDamage = 1;
+                }
+            } else if (steps >= 260) {
+                // После 260 шагов
+                if (enemyChance < 0.1) {
+                    // Токсичный
+                    enemyType = 'токсичный';
+                    enemyMaxHealth = 40 * hpMultiplier;
+                    enemyHealth = 40 * hpMultiplier;
+                    enemyDamage = 2;
+                } else if (enemyChance < 0.25) {
+                    // Пожиратель душ
+                    enemyType = 'пожиратель душ';
+                    enemyMaxHealth = 50 * hpMultiplier;
+                    enemyHealth = 50 * hpMultiplier;
+                    enemyDamage = 3;
+                } else if (enemyChance < 0.4) {
+                    // Слизень
+                    enemyType = 'слизень';
+                    enemyMaxHealth = 60 * hpMultiplier;
+                    enemyHealth = 60 * hpMultiplier;
+                    enemyDamage = 2;
+                } else {
+                    // Обычный враг
+                    enemyType = 'обычный';
+                    enemyMaxHealth = 45 * hpMultiplier;
+                    enemyHealth = 45 * hpMultiplier;
+                    enemyDamage = 1;
+                }
+            } else if (steps >= 250) {
+                // После 250 шагов
+                if (enemyChance < 0.1) {
+                    // Пожиратель душ
+                    enemyType = 'пожиратель душ';
+                    enemyMaxHealth = 50 * hpMultiplier;
+                    enemyHealth = 50 * hpMultiplier;
+                    enemyDamage = 3;
+                } else if (enemyChance < 0.25) {
+                    // Слизень
+                    enemyType = 'слизень';
+                    enemyMaxHealth = 60 * hpMultiplier;
+                    enemyHealth = 60 * hpMultiplier;
+                    enemyDamage = 2;
+                } else {
+                    // Обычный враг
+                    enemyType = 'обычный';
+                    enemyMaxHealth = 45 * hpMultiplier;
+                    enemyHealth = 45 * hpMultiplier;
+                    enemyDamage = 1;
+                }
+            } else if (steps >= 130) {
+                // После 130 шагов
+                if (enemyChance < 0.1) {
+                    // Пожиратель душ
+                    enemyType = 'пожиратель душ';
+                    enemyMaxHealth = 50 * hpMultiplier;
+                    enemyHealth = 50 * hpMultiplier;
+                    enemyDamage = 3;
+                } else if (enemyChance < 0.25) {
+                    // Слизень
+                    enemyType = 'слизень';
+                    enemyMaxHealth = 60 * hpMultiplier;
+                    enemyHealth = 60 * hpMultiplier;
+                    enemyDamage = 2;
+                } else {
+                    // Обычный враг
+                    enemyType = 'обычный';
+                    enemyMaxHealth = 45 * hpMultiplier;
+                    enemyHealth = 45 * hpMultiplier;
+                    enemyDamage = 1;
+                }
+            } else if (steps >= 70) {
+                // После 70 шагов
+                if (enemyChance < 0.15) {
+                    // Слизень
+                    enemyType = 'слизень';
+                    enemyMaxHealth = 45 * hpMultiplier;
+                    enemyHealth = 45 * hpMultiplier;
+                    enemyDamage = 2;
+                } else {
+                    // Обычный враг
+                    enemyType = 'обычный';
+                    enemyMaxHealth = 30 * hpMultiplier;
+                    enemyHealth = 30 * hpMultiplier;
+                    enemyDamage = 1;
+                }
+            } else if (steps >= 30) {
+                // После 30 шагов
+                if (enemyChance < 0.15) {
+                    // Слизень
+                    enemyType = 'слизень';
+                    enemyMaxHealth = 30 * hpMultiplier;
+                    enemyHealth = 30 * hpMultiplier;
+                    enemyDamage = 2;
+                } else {
+                    // Обычный враг
+                    enemyType = 'обычный';
+                    enemyMaxHealth = 15 * hpMultiplier;
+                    enemyHealth = 15 * hpMultiplier;
+                    enemyDamage = 1;
+                }
+            } else if (steps >= 20) {
+                // После 20 шагов
+                enemyType = 'обычный';
+                enemyMaxHealth = 15 * hpMultiplier;
+                enemyHealth = 15 * hpMultiplier;
+                enemyDamage = 1;
+            } else {
+                // До 20 шагов
+                enemyType = 'обычный';
+                enemyMaxHealth = 5 * hpMultiplier;
+                enemyHealth = 5 * hpMultiplier;
+                enemyDamage = 1;
             }
             
-            // Обновление отображения монет
-            function updateCoins() {
-                coinsElement.textContent = coins;
+            // Сброс параметров боя
+            dodgesLeft = maxDodges;
+            isPlayerTurn = true;
+            
+            enemyInfoElement.textContent = `На вас напал ${enemyType === 'обычный' ? 'враг' : enemyType}!`;
+            
+            showMessage(`Враг атаковал вас! Ваш ход.`);
+            updateUI();
+            
+            // Запуск эффекта черной кнопки только на 100 шаге и далее
+            if (steps >= 100) {
+                startBlackButtonEffect();
             }
             
-            // Обновление отображения перезарядки
-            function updateCooldown() {
-                const actualCooldown = Math.max(0.1, cooldown - activeEffects.cooldownReduction);
-                cooldownElement.textContent = actualCooldown.toFixed(1);
-                spinBtn.textContent = `Крутить (${actualCooldown.toFixed(1)} сек)`;
+            // Для токсичного врага запускаем эффект яда
+            if (enemyType === 'токсичный') {
+                startToxicDamage();
             }
             
-            // Переключение вкладок
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tab = btn.getAttribute('data-tab');
+            // Для босса ERROR запускаем эффект перемещения кнопок
+            if (enemyType === 'ERROR') {
+                startButtonMoveEffect();
+            }
+            
+            // Для босса БОГ ЗЛА запускаем его способности
+            if (enemyType === 'БОГ ЗЛА') {
+                startEvilGodAbilities();
+            }
+            
+            // Для босса БЕСКОНЕЧНОСТЬ запускаем его способности
+            if (enemyType === 'БЕСКОНЕЧНОСТЬ') {
+                startInfinityAbilities();
+            }
+        }
+        
+        // Функция для начала боя с боссом
+        function startBossBattle(bossName) {
+            isBattleActive = true;
+            battleSection.style.display = 'block';
+            stepBtn.disabled = true;
+            inventorySection.style.display = 'block';
+            
+            enemyType = bossName;
+            
+            if (bossName === 'Король слизней') {
+                enemyMaxHealth = 50;
+                enemyHealth = 50;
+                enemyDamage = 4;
+            } else if (bossName === 'Теневой лорд') {
+                enemyMaxHealth = 100;
+                enemyHealth = 100;
+                enemyDamage = 2;
+            } else if (bossName === 'ERROR') {
+                enemyMaxHealth = 404;
+                enemyHealth = 404;
+                enemyDamage = 1; // Будет случайным от 1 до 4
+            } else if (bossName === 'БОГ ЗЛА') {
+                enemyMaxHealth = 222;
+                enemyHealth = 222;
+                enemyDamage = 3;
+            } else if (bossName === 'БЕСКОНЕЧНОСТЬ') {
+                enemyMaxHealth = 1000;
+                enemyHealth = 1000;
+                enemyDamage = 5;
+            }
+            
+            // Сброс параметров боя
+            dodgesLeft = maxDodges;
+            isPlayerTurn = true;
+            
+            enemyInfoElement.textContent = `На вас напал ${bossName}!`;
+            
+            showMessage(`Босс ${bossName} атаковал вас! Ваш ход.`);
+            updateUI();
+            
+            // Запуск эффекта черной кнопки только на 100 шаге и далее
+            if (steps >= 100) {
+                startBlackButtonEffect();
+            }
+            
+            // Для босса ERROR запускаем эффект перемещения кнопок
+            if (bossName === 'ERROR') {
+                startButtonMoveEffect();
+            }
+            
+            // Для босса БОГ ЗЛА запускаем его способности
+            if (bossName === 'БОГ ЗЛА') {
+                startEvilGodAbilities();
+            }
+            
+            // Для босса БЕСКОНЕЧНОСТЬ запускаем его способности
+            if (bossName === 'БЕСКОНЕЧНОСТЬ') {
+                startInfinityAbilities();
+            }
+        }
+        
+        // Функция для окончания боя
+        function endBattle() {
+            isBattleActive = false;
+            battleSection.style.display = 'none';
+            stepBtn.disabled = false;
+            inventorySection.style.display = 'none';
+            weaponMinigame.style.display = 'none';
+            
+            // Остановка эффектов черных кнопок
+            clearInterval(blackAttackInterval);
+            clearInterval(blackInventoryInterval);
+            
+            // Остановка эффекта перемещения кнопок
+            clearInterval(buttonMoveInterval);
+            if (buttonsMoved) {
+                restoreButtonOrder();
+            }
+            
+            // Остановка эффекта яда
+            clearInterval(toxicDamageInterval);
+            
+            // Остановка способностей боссов
+            clearInterval(bossAbilityInterval);
+            clearInterval(circlesInterval);
+            circlesContainer.innerHTML = '';
+            
+            if (enemyHealth <= 0) {
+                let expGained = 0;
+                let coinsGained = 0;
+                
+                if (enemyType === 'обычный') {
+                    coinsGained = 10;
+                    expGained = 15;
+                } else if (enemyType === 'слизень') {
+                    coinsGained = 20;
+                    expGained = 30;
+                } else if (enemyType === 'пожиратель душ') {
+                    coinsGained = 50;
+                    expGained = 75;
+                } else if (enemyType === 'токсичный') {
+                    coinsGained = 60;
+                    expGained = 90;
+                } else if (enemyType === 'Король слизней') {
+                    coinsGained = 100;
+                    expGained = 100;
+                } else if (enemyType === 'Теневой лорд') {
+                    coinsGained = 200;
+                    expGained = 200;
+                } else if (enemyType === 'ERROR') {
+                    coinsGained = 500;
+                    expGained = 500;
+                } else if (enemyType === 'БОГ ЗЛА') {
+                    coinsGained = 800;
+                    expGained = 800;
+                } else if (enemyType === 'БЕСКОНЕЧНОСТЬ') {
+                    coinsGained = 1500;
+                    expGained = 1500;
+                }
+                
+                coins += coinsGained;
+                gainExperience(expGained);
+                showMessage(`Вы победили ${enemyType === 'обычный' ? 'врага' : enemyType}! Получено ${coinsGained} монет и ${expGained} опыта.`);
+            } else if (playerHealth <= 0) {
+                showMessage(`Вы проиграли! Начните заново.`);
+                // Сброс игры
+                resetGame();
+            }
+            
+            updateUI();
+        }
+        
+        // Функция для получения опыта
+        function gainExperience(amount) {
+            experience += amount;
+            
+            if (experience >= expToNextLevel) {
+                levelUp();
+            }
+            
+            updateUI();
+        }
+        
+        // Функция для повышения уровня
+        function levelUp() {
+            isLevelUpActive = true;
+            levelUpSection.style.display = 'block';
+            stepBtn.disabled = true;
+            
+            showMessage(`Поздравляем! Вы достигли уровня ${level + 1}. Выберите улучшение.`);
+        }
+        
+        // Функция для применения улучшения уровня
+        function applyLevelUp(choice) {
+            if (choice === 'dodge') {
+                maxDodges += 1;
+                dodgesLeft = maxDodges;
+                showMessage(`Вы увеличили количество уворотов до ${maxDodges}!`);
+            } else if (choice === 'coins') {
+                coinsPerStep += 3;
+                showMessage(`Теперь вы получаете на 3 монеты больше за каждый шаг!`);
+            } else if (choice === 'bonus') {
+                coins += 100;
+                showMessage(`Вы получили 100 монет!`);
+            }
+            
+            level++;
+            experience -= expToNextLevel;
+            expToNextLevel += 10;
+            
+            isLevelUpActive = false;
+            levelUpSection.style.display = 'none';
+            stepBtn.disabled = false;
+            
+            updateUI();
+        }
+        
+        // Функция для атаки игрока
+        function playerAttack() {
+            if (!isPlayerTurn || !isBattleActive || blackAttackActive) return;
+            
+            // Проверка на черную кнопку
+            if (attackBtn.classList.contains('black-attack')) {
+                playerHealth -= 5;
+                showMessage(`Вы попали в ловушку и потеряли 5 HP!`);
+                attackBtn.classList.remove('black-attack');
+                blackAttackActive = false;
+                
+                if (playerHealth <= 0) {
+                    endBattle();
+                    return;
+                }
+                
+                updateUI();
+                return;
+            }
+            
+            // Проверка оружия для мини-игры
+            if (currentWeapon === 'меч' || currentWeapon === 'Меч бога') {
+                startSwordMinigame();
+                return;
+            } else if (currentWeapon === 'копьё') {
+                startSpearMinigame();
+                return;
+            } else if (currentWeapon === 'пистолет') {
+                startPistolMinigame();
+                return;
+            }
+            
+            // Обычная атака
+            let damageDealt = playerDamage;
+            
+            // Проверка на сферу ярости
+            const rageSphereIndex = inventory.findIndex(item => item.id === 'rageSphere');
+            if (rageSphereIndex !== -1) {
+                damageDealt *= 2;
+                inventory.splice(rageSphereIndex, 1);
+                showMessage(`Вы использовали Сферу ярости! Урон удвоен.`);
+            }
+            
+            // Проверка на сферу бога
+            const godSphereIndex = inventory.findIndex(item => item.id === 'godSphere');
+            if (godSphereIndex !== -1) {
+                damageDealt *= 5;
+                playerHealth -= 5;
+                inventory.splice(godSphereIndex, 1);
+                showMessage(`Вы использовали Сферу бога! Урон увеличен в 5 раз, но вы потеряли 5 HP.`);
+            }
+            
+            // Проверка на сферу комбо
+            const comboSphereIndex = inventory.findIndex(item => item.id === 'comboSphere');
+            if (comboSphereIndex !== -1) {
+                damageDealt *= 2;
+                playerHealth = Math.min(playerHealth + 10, playerMaxHealth);
+                inventory.splice(comboSphereIndex, 1);
+                showMessage(`Вы использовали Сферу комбо! Урон удвоен и восстановлено 10 HP.`);
+            }
+            
+            enemyHealth -= damageDealt;
+            showMessage(`Вы атаковали врага и нанесли ${damageDealt} урона!`);
+            
+            if (enemyHealth <= 0) {
+                endBattle();
+                return;
+            }
+            
+            // Переход хода к врагу
+            isPlayerTurn = false;
+            
+            // Определение времени хода врага
+            let enemyTurnTime;
+            if (enemyType === 'слизень') {
+                enemyTurnTime = Math.random() * 0.75 + 0.75; // 0.75 - 1.5 секунды
+            } else if (enemyType === 'Король слизней') {
+                enemyTurnTime = Math.random() * 0.25 + 0.5; // 0.5 - 0.75 секунды
+            } else if (enemyType === 'Теневой лорд') {
+                enemyTurnTime = 1; // 1 секунда
+            } else if (enemyType === 'ERROR') {
+                enemyTurnTime = Math.random() * 1.0 + 0.4; // 0.4 - 1.4 секунды
+            } else if (enemyType === 'пожиратель душ') {
+                enemyTurnTime = Math.random() * 1.0 + 1.0; // 1.0 - 2.0 секунды
+            } else if (enemyType === 'токсичный') {
+                enemyTurnTime = Math.random() * 0.1 + 1.0; // 1.0 - 1.1 секунды
+            } else if (enemyType === 'БОГ ЗЛА') {
+                enemyTurnTime = Math.random() * 0.9 + 0.6; // 0.6 - 1.5 секунды
+            } else if (enemyType === 'БЕСКОНЕЧНОСТЬ') {
+                enemyTurnTime = Math.random() * 0.3 + 0.3; // 0.3 - 0.6 секунды
+            } else {
+                enemyTurnTime = Math.random() * 1.5 + 1.5; // 1.5 - 3 секунды
+            }
+            
+            showMessage(`Враг готовится атаковать...`, false);
+            
+            setTimeout(enemyTurn, enemyTurnTime * 1000);
+            updateUI();
+        }
+        
+        // Функция для защиты игрока
+        function playerDefend() {
+            if (!isPlayerTurn || !isBattleActive) return;
+            
+            // Механика защиты: 70% шанс получить 1 HP, 30% шанс потерять 2 HP
+            if (Math.random() < 0.7) {
+                playerHealth = Math.min(playerHealth + 1, playerMaxHealth);
+                showMessage(`Вы успешно защитились и восстановили 1 HP!`);
+            } else {
+                playerHealth = Math.max(playerHealth - 2, 0);
+                showMessage(`Защита не удалась! Вы потеряли 2 HP.`);
+                
+                if (playerHealth <= 0) {
+                    endBattle();
+                    return;
+                }
+            }
+            
+            // Переход хода к врагу
+            isPlayerTurn = false;
+            
+            // Определение времени хода врага
+            let enemyTurnTime;
+            if (enemyType === 'слизень') {
+                enemyTurnTime = Math.random() * 0.75 + 0.75; // 0.75 - 1.5 секунды
+            } else if (enemyType === 'Король слизней') {
+                enemyTurnTime = Math.random() * 0.25 + 0.5; // 0.5 - 0.75 секунды
+            } else if (enemyType === 'Теневой лорд') {
+                enemyTurnTime = 1; // 1 секунда
+            } else if (enemyType === 'ERROR') {
+                enemyTurnTime = Math.random() * 1.0 + 0.4; // 0.4 - 1.4 секунды
+            } else if (enemyType === 'пожиратель душ') {
+                enemyTurnTime = Math.random() * 1.0 + 1.0; // 1.0 - 2.0 секунды
+            } else if (enemyType === 'токсичный') {
+                enemyTurnTime = Math.random() * 0.1 + 1.0; // 1.0 - 1.1 секунды
+            } else if (enemyType === 'БОГ ЗЛА') {
+                enemyTurnTime = Math.random() * 0.9 + 0.6; // 0.6 - 1.5 секунды
+            } else if (enemyType === 'БЕСКОНЕЧНОСТЬ') {
+                enemyTurnTime = Math.random() * 0.3 + 0.3; // 0.3 - 0.6 секунды
+            } else {
+                enemyTurnTime = Math.random() * 1.5 + 1.5; // 1.5 - 3 секунды
+            }
+            
+            showMessage(`Враг готовится атаковать...`, false);
+            
+            setTimeout(enemyTurn, enemyTurnTime * 1000);
+            updateUI();
+        }
+        
+        // Функция для уворота игрока
+        function playerDodge() {
+            if (isPlayerTurn || !isBattleActive || dodgesLeft <= 0) return;
+            
+            dodgesLeft--;
+            showMessage(`Вы увернулись от атаки врага!`);
+            
+            // Возврат хода игроку
+            isPlayerTurn = true;
+            
+            updateUI();
+        }
+        
+        // Функция для хода врага
+        function enemyTurn() {
+            if (isPlayerTurn || !isBattleActive) return;
+            
+            let damageDealt = enemyDamage;
+            
+            // Для ERROR урон случайный от 1 до 4
+            if (enemyType === 'ERROR') {
+                damageDealt = Math.floor(Math.random() * 4) + 1;
+            }
+            
+            // Учет брони
+            if (hasGodArmor) {
+                damageDealt = Math.floor(damageDealt * 0.4); // -60%
+            } else if (hasDiamondArmor) {
+                damageDealt = Math.floor(damageDealt * 0.6); // -40%
+            } else if (hasIronArmor) {
+                damageDealt = Math.floor(damageDealt * 0.8); // -20%
+            }
+            
+            // Проверка на батон
+            const batonIndex = inventory.findIndex(item => item.id === 'baton');
+            if (batonIndex !== -1) {
+                damageDealt = Math.floor(damageDealt / 2);
+                inventory.splice(batonIndex, 1);
+                showMessage(`Вы использовали Батон! Урон врага уменьшен вдвое.`);
+            }
+            
+            playerHealth -= damageDealt;
+            showMessage(`Враг атаковал и нанес ${damageDealt} урона!`, false);
+            
+            if (playerHealth <= 0) {
+                endBattle();
+                return;
+            }
+            
+            // Возврат хода игроку
+            isPlayerTurn = true;
+            
+            showMessage(`Ваш ход!`);
+            updateUI();
+        }
+        
+        // Функция для мини-игры меча
+        function startSwordMinigame() {
+            const isGodSword = currentWeapon === 'Меч бога';
+            const damage = isGodSword ? 20 : 4;
+            const failDamage = isGodSword ? 10 : 2;
+            
+            weaponMinigame.style.display = 'block';
+            weaponMinigame.innerHTML = `
+                <h3>Атака ${isGodSword ? 'мечом бога' : 'мечом'}!</h3>
+                <p>Нажмите кнопку "Замах" дважды в течение 4 секунд</p>
+                <div class="minigame-timer">
+                    <div class="timer-bar" id="swordTimer"></div>
+                </div>
+                <button class="minigame-btn" id="swordSwingBtn">Замах</button>
+                <p>Нажато: <span id="swordSwings">0</span>/2</p>
+            `;
+            
+            const swordTimer = document.getElementById('swordTimer');
+            const swordSwingBtn = document.getElementById('swordSwingBtn');
+            const swordSwingsElement = document.getElementById('swordSwings');
+            
+            let swings = 0;
+            let timeLeft = 4;
+            
+            const timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                swordTimer.style.width = `${(timeLeft / 4) * 100}%`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    // Неудачная атака
+                    enemyHealth -= failDamage;
+                    showMessage(`Вы не успели сделать полную атаку! Нанесено только ${failDamage} урона.`);
+                    weaponMinigame.style.display = 'none';
                     
-                    tabBtns.forEach(b => b.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
-                    
-                    btn.classList.add('active');
-                    document.getElementById(tab).classList.add('active');
-                    
-                    if (tab === 'inventory') {
-                        updateInventoryDisplay();
+                    if (enemyHealth <= 0) {
+                        endBattle();
+                        return;
                     }
+                    
+                    // Переход хода к врагу
+                    isPlayerTurn = false;
+                    let enemyTurnTime = getEnemyTurnTime();
+                    showMessage(`Враг готовится атаковать...`, false);
+                    setTimeout(enemyTurn, enemyTurnTime * 1000);
+                    updateUI();
+                }
+            }, 100);
+            
+            swordSwingBtn.addEventListener('click', () => {
+                swings++;
+                swordSwingsElement.textContent = swings;
+                
+                if (swings >= 2) {
+                    clearInterval(timerInterval);
+                    // Успешная атака
+                    enemyHealth -= damage;
+                    showMessage(`Вы успешно атаковали ${isGodSword ? 'мечом бога' : 'мечом'}! Нанесено ${damage} урона.`);
+                    weaponMinigame.style.display = 'none';
+                    
+                    if (enemyHealth <= 0) {
+                        endBattle();
+                        return;
+                    }
+                    
+                    // Переход хода к врагу
+                    isPlayerTurn = false;
+                    let enemyTurnTime = getEnemyTurnTime();
+                    showMessage(`Враг готовится атаковать...`, false);
+                    setTimeout(enemyTurn, enemyTurnTime * 1000);
+                    updateUI();
+                }
+            });
+        }
+        
+        // Функция для мини-игры копья
+        function startSpearMinigame() {
+            weaponMinigame.style.display = 'block';
+            weaponMinigame.innerHTML = `
+                <h3>Атака копьём!</h3>
+                <p>Зажмите кнопку на 3 секунды</p>
+                <div class="minigame-timer">
+                    <div class="timer-bar" id="spearTimer"></div>
+                </div>
+                <button class="minigame-btn" id="spearHoldBtn">Удерживайте для атаки</button>
+            `;
+            
+            const spearTimer = document.getElementById('spearTimer');
+            const spearHoldBtn = document.getElementById('spearHoldBtn');
+            
+            let holdTime = 0;
+            let holding = false;
+            const requiredTime = 3;
+            
+            const holdInterval = setInterval(() => {
+                if (holding) {
+                    holdTime += 0.1;
+                    spearTimer.style.width = `${(holdTime / requiredTime) * 100}%`;
+                    
+                    if (holdTime >= requiredTime) {
+                        clearInterval(holdInterval);
+                        // Успешная атака
+                        const damage = Math.floor(Math.random() * 4) + 3; // 3-6 урона
+                        enemyHealth -= damage;
+                        showMessage(`Вы успешно атаковали копьём! Нанесено ${damage} урона.`);
+                        weaponMinigame.style.display = 'none';
+                        
+                        if (enemyHealth <= 0) {
+                            endBattle();
+                            return;
+                        }
+                        
+                        // Переход хода к врагу
+                        isPlayerTurn = false;
+                        let enemyTurnTime = getEnemyTurnTime();
+                        showMessage(`Враг готовится атаковать...`, false);
+                        setTimeout(enemyTurn, enemyTurnTime * 1000);
+                        updateUI();
+                    }
+                }
+            }, 100);
+            
+            spearHoldBtn.addEventListener('mousedown', () => {
+                holding = true;
+            });
+            
+            spearHoldBtn.addEventListener('mouseup', () => {
+                holding = false;
+                if (holdTime < requiredTime) {
+                    clearInterval(holdInterval);
+                    // Неудачная атака
+                    enemyHealth -= 2;
+                    showMessage(`Вы не удержали копьё достаточно долго! Нанесено только 2 урона.`);
+                    weaponMinigame.style.display = 'none';
+                    
+                    if (enemyHealth <= 0) {
+                        endBattle();
+                        return;
+                    }
+                    
+                    // Переход хода к врагу
+                    isPlayerTurn = false;
+                    let enemyTurnTime = getEnemyTurnTime();
+                    showMessage(`Враг готовится атаковать...`, false);
+                    setTimeout(enemyTurn, enemyTurnTime * 1000);
+                    updateUI();
+                }
+            });
+        }
+        
+        // Функция для мини-игры пистолета
+        function startPistolMinigame() {
+            weaponMinigame.style.display = 'block';
+            weaponMinigame.innerHTML = `
+                <h3>Стрельба из пистолета!</h3>
+                <p>Нажмите кнопку "Стрелять", когда она станет жёлтой</p>
+                <button class="minigame-btn" id="pistolShootBtn" style="background: gray">Стрелять</button>
+            `;
+            
+            const pistolShootBtn = document.getElementById('pistolShootBtn');
+            
+            const waitTime = Math.random() * 2 + 2; // 2-4 секунды
+            let canShoot = false;
+            
+            setTimeout(() => {
+                canShoot = true;
+                pistolShootBtn.style.background = '#ffeb3b';
+                pistolShootBtn.style.color = 'black';
+                
+                setTimeout(() => {
+                    if (canShoot) {
+                        canShoot = false;
+                        pistolShootBtn.style.background = 'gray';
+                        pistolShootBtn.style.color = 'white';
+                        // Неудачная стрельба
+                        enemyHealth -= 2;
+                        showMessage(`Вы не успели выстрелить вовремя! Нанесено только 2 урона.`);
+                        weaponMinigame.style.display = 'none';
+                        
+                        if (enemyHealth <= 0) {
+                            endBattle();
+                            return;
+                        }
+                        
+                        // Переход хода к врагу
+                        isPlayerTurn = false;
+                        let enemyTurnTime = getEnemyTurnTime();
+                        showMessage(`Враг готовится атаковать...`, false);
+                        setTimeout(enemyTurn, enemyTurnTime * 1000);
+                        updateUI();
+                    }
+                }, 500); // 0.5 секунды на реакцию
+            }, waitTime * 1000);
+            
+            pistolShootBtn.addEventListener('click', () => {
+                if (canShoot) {
+                    canShoot = false;
+                    pistolShootBtn.style.background = 'gray';
+                    pistolShootBtn.style.color = 'white';
+                    // Успешная стрельба
+                    enemyHealth -= 5;
+                    showMessage(`Вы успешно выстрелили! Нанесено 5 урона.`);
+                    weaponMinigame.style.display = 'none';
+                    
+                    if (enemyHealth <= 0) {
+                        endBattle();
+                        return;
+                    }
+                    
+                    // Переход хода к врагу
+                    isPlayerTurn = false;
+                    let enemyTurnTime = getEnemyTurnTime();
+                    showMessage(`Враг готовится атаковать...`, false);
+                    setTimeout(enemyTurn, enemyTurnTime * 1000);
+                    updateUI();
+                }
+            });
+        }
+        
+        // Функция для получения времени хода врага
+        function getEnemyTurnTime() {
+            if (enemyType === 'слизень') {
+                return Math.random() * 0.75 + 0.75;
+            } else if (enemyType === 'Король слизней') {
+                return Math.random() * 0.25 + 0.5;
+            } else if (enemyType === 'Теневой лорд') {
+                return 1;
+            } else if (enemyType === 'ERROR') {
+                return Math.random() * 1.0 + 0.4;
+            } else if (enemyType === 'пожиратель душ') {
+                return Math.random() * 1.0 + 1.0;
+            } else if (enemyType === 'токсичный') {
+                return Math.random() * 0.1 + 1.0;
+            } else if (enemyType === 'БОГ ЗЛА') {
+                return Math.random() * 0.9 + 0.6;
+            } else if (enemyType === 'БЕСКОНЕЧНОСТЬ') {
+                return Math.random() * 0.3 + 0.3;
+            } else {
+                return Math.random() * 1.5 + 1.5;
+            }
+        }
+        
+        // Функция для эффекта черной кнопки
+        let blackAttackInterval;
+        let blackInventoryInterval;
+        
+        function startBlackButtonEffect() {
+            // Для кнопки атаки
+            blackAttackInterval = setInterval(() => {
+                if (isBattleActive && isPlayerTurn) {
+                    if (Math.random() < 0.4) { // 40% шанс
+                        attackBtn.classList.add('black-attack');
+                        blackAttackActive = true;
+                        
+                        setTimeout(() => {
+                            attackBtn.classList.remove('black-attack');
+                            blackAttackActive = false;
+                        }, 2000); // 2 секунды
+                    }
+                }
+            }, 3000); // Каждые 3 секунды
+            
+            // Для инвентаря
+            blackInventoryInterval = setInterval(() => {
+                if (isBattleActive && isPlayerTurn) {
+                    if (Math.random() < 0.4) { // 40% шанс
+                        blackInventoryActive = true;
+                        
+                        setTimeout(() => {
+                            blackInventoryActive = false;
+                        }, 2000); // 2 секунды
+                    }
+                }
+            }, 5000); // Каждые 5 секунды
+        }
+        
+        // Функция для эффекта перемещения кнопок (для босса ERROR)
+        let buttonMoveInterval;
+        
+        function startButtonMoveEffect() {
+            // Сохраняем оригинальный порядок кнопок
+            originalButtonOrder = Array.from(playerActions.children);
+            
+            buttonMoveInterval = setInterval(() => {
+                if (isBattleActive && !buttonsMoved) {
+                    // Перемешиваем кнопки
+                    const buttons = Array.from(playerActions.children);
+                    for (let i = buttons.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        playerActions.appendChild(buttons[j]);
+                    }
+                    buttonsMoved = true;
+                    showMessage(`Кнопки перемешаны! Будьте внимательны!`);
+                    
+                    // Через 5 секунд возвращаем обратно
+                    setTimeout(() => {
+                        if (isBattleActive) {
+                            restoreButtonOrder();
+                            buttonsMoved = false;
+                            showMessage(`Кнопки вернулись на место!`);
+                        }
+                    }, 5000);
+                }
+            }, 10000); // Каждые 10 секунды
+        }
+        
+        // Функция для восстановления оригинального порядка кнопок
+        function restoreButtonOrder() {
+            playerActions.innerHTML = '';
+            originalButtonOrder.forEach(button => {
+                playerActions.appendChild(button);
+            });
+        }
+        
+        // Функция для эффекта яда (для токсичного врага)
+        function startToxicDamage() {
+            toxicDamageInterval = setInterval(() => {
+                if (isBattleActive) {
+                    playerHealth = Math.max(playerHealth - 0.5, 0);
+                    showMessage(`Токсичный яд наносит 0.5 урона!`);
+                    
+                    if (playerHealth <= 0) {
+                        endBattle();
+                    } else {
+                        updateUI();
+                    }
+                }
+            }, 2000); // Каждые 2 секунды
+        }
+        
+        // Функция для способностей БОГА ЗЛА
+        function startEvilGodAbilities() {
+            // Способность 1: отбирает предмет из инвентаря каждые 20-40 секунд
+            bossAbilityInterval = setInterval(() => {
+                if (isBattleActive && inventory.length > 0) {
+                    // Ищем предметы, которые не являются божественными
+                    const nonGodItems = inventory.filter(item => 
+                        !item.name.includes('бога') && !item.name.includes('Бога')
+                    );
+                    
+                    if (nonGodItems.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * nonGodItems.length);
+                        const stolenItem = nonGodItems[randomIndex];
+                        inventory.splice(inventory.findIndex(item => item.id === stolenItem.id), 1);
+                        showMessage(`Бог зла украл ваш предмет: ${stolenItem.name}!`);
+                        updateInventory();
+                    }
+                }
+            }, (Math.random() * 20 + 20) * 1000); // 20-40 секунд
+            
+            // Способность 2: спавнит кружки каждые 10-20 секунд
+            circlesInterval = setInterval(() => {
+                if (isBattleActive) {
+                    spawnCircles();
+                }
+            }, (Math.random() * 10 + 10) * 1000); // 10-20 секунд
+        }
+        
+        // Функция для спавна кружков
+        function spawnCircles() {
+            circlesContainer.innerHTML = '';
+            const circles = [];
+            
+            // Создаем 5 кружков
+            for (let i = 0; i < 5; i++) {
+                const circle = document.createElement('div');
+                circle.className = 'circle';
+                circle.style.left = `${Math.random() * 80 + 10}%`;
+                circle.style.top = `${Math.random() * 80 + 10}%`;
+                
+                circle.addEventListener('click', () => {
+                    circle.remove();
+                    // Проверяем, все ли кружки уничтожены
+                    if (circlesContainer.children.length === 0) {
+                        showMessage(`Вы успешно уничтожили все кружки!`);
+                    }
+                });
+                
+                circlesContainer.appendChild(circle);
+                circles.push(circle);
+            }
+            
+            showMessage(`Появились кружки! Уничтожьте их за 10 секунд!`);
+            
+            // Через 10 секунд проверяем, остались ли кружки
+            setTimeout(() => {
+                if (circlesContainer.children.length > 0) {
+                    circlesContainer.innerHTML = '';
+                    playerHealth = Math.max(playerHealth - 12, 0);
+                    showMessage(`Вы не успели уничтожить все кружки! Потеряно 12 HP.`);
+                    
+                    if (playerHealth <= 0) {
+                        endBattle();
+                    } else {
+                        updateUI();
+                    }
+                }
+            }, 10000);
+        }
+        
+        // Функция для способностей БЕСКОНЕЧНОСТИ
+        function startInfinityAbilities() {
+            bossAbilityInterval = setInterval(() => {
+                if (isBattleActive) {
+                    // Случайная способность боссов
+                    const abilities = [
+                        'blackAttack',
+                        'buttonMove',
+                        'toxicDamage',
+                        'stealItem',
+                        'circles'
+                    ];
+                    
+                    const randomAbility = abilities[Math.floor(Math.random() * abilities.length)];
+                    
+                    switch(randomAbility) {
+                        case 'blackAttack':
+                            attackBtn.classList.add('black-attack');
+                            blackAttackActive = true;
+                            setTimeout(() => {
+                                attackBtn.classList.remove('black-attack');
+                                blackAttackActive = false;
+                            }, 2000);
+                            showMessage(`Бесконечность активировала черные кнопки!`);
+                            break;
+                            
+                        case 'buttonMove':
+                            if (!buttonsMoved) {
+                                originalButtonOrder = Array.from(playerActions.children);
+                                const buttons = Array.from(playerActions.children);
+                                for (let i = buttons.length - 1; i > 0; i--) {
+                                    const j = Math.floor(Math.random() * (i + 1));
+                                    playerActions.appendChild(buttons[j]);
+                                }
+                                buttonsMoved = true;
+                                showMessage(`Бесконечность перемешала кнопки!`);
+                                
+                                setTimeout(() => {
+                                    if (isBattleActive) {
+                                        restoreButtonOrder();
+                                        buttonsMoved = false;
+                                        showMessage(`Кнопки вернулись на место!`);
+                                    }
+                                }, 5000);
+                            }
+                            break;
+                            
+                        case 'toxicDamage':
+                            playerHealth = Math.max(playerHealth - 2, 0);
+                            showMessage(`Бесконечность применила токсичный яд! Потеряно 2 HP.`);
+                            
+                            if (playerHealth <= 0) {
+                                endBattle();
+                            } else {
+                                updateUI();
+                            }
+                            break;
+                            
+                        case 'stealItem':
+                            if (inventory.length > 0) {
+                                const nonGodItems = inventory.filter(item => 
+                                    !item.name.includes('бога') && !item.name.includes('Бога')
+                                );
+                                
+                                if (nonGodItems.length > 0) {
+                                    const randomIndex = Math.floor(Math.random() * nonGodItems.length);
+                                    const stolenItem = nonGodItems[randomIndex];
+                                    inventory.splice(inventory.findIndex(item => item.id === stolenItem.id), 1);
+                                    showMessage(`Бесконечность украла ваш предмет: ${stolenItem.name}!`);
+                                    updateInventory();
+                                }
+                            }
+                            break;
+                            
+                        case 'circles':
+                            spawnCircles();
+                            break;
+                    }
+                }
+            }, 35000); // Каждые 35 секунд
+        }
+        
+        // Функция для показа магазина
+        function showShop() {
+            isShopActive = true;
+            shopSection.style.display = 'block';
+            stepBtn.disabled = false; // Можно шагать не покупая
+            
+            // Заполнение магазина товарами
+            shopItemsElement.innerHTML = '';
+            
+            // С шансом 10% добавляем сундук
+            if (Math.random() < 0.1) {
+                const chestItem = {
+                    id: 'chest',
+                    name: 'Сундук',
+                    price: 0,
+                    description: 'Даёт 100 монет',
+                    type: 'chest'
+                };
+                
+                const shopItemElement = document.createElement('div');
+                shopItemElement.className = 'shop-item';
+                shopItemElement.innerHTML = `
+                    <h3>${chestItem.name}</h3>
+                    <div>${chestItem.description}</div>
+                    <div>Цена: ${chestItem.price} монет</div>
+                    <button class="shop-btn" data-id="${chestItem.id}" data-price="${chestItem.price}">Купить</button>
+                `;
+                shopItemsElement.appendChild(shopItemElement);
+            }
+            
+            shopItems.forEach(item => {
+                const shopItemElement = document.createElement('div');
+                shopItemElement.className = 'shop-item';
+                shopItemElement.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <div>${item.description}</div>
+                    <div>Цена: ${item.price} монет</div>
+                    <button class="shop-btn" data-id="${item.id}" data-price="${item.price}" ${coins < item.price ? 'disabled' : ''}>Купить</button>
+                `;
+                shopItemsElement.appendChild(shopItemElement);
+            });
+            
+            // Добавление обработчиков событий для кнопок покупки
+            document.querySelectorAll('.shop-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const itemId = e.target.getAttribute('data-id');
+                    const itemPrice = parseInt(e.target.getAttribute('data-price'));
+                    buyItem(itemId, itemPrice);
                 });
             });
             
-            // Функция "кручения"
-            function spin() {
-                if (!canSpin) return;
+            showMessage('Вы попали в магазин! Можно купить улучшения или продолжить путь.');
+        }
+        
+        // Функция для покупки предмета
+        function buyItem(itemId, price) {
+            if (coins >= price) {
+                coins -= price;
                 
-                canSpin = false;
-                spinBtn.disabled = true;
-                
-                // Определение результата после небольшой задержки
-                setTimeout(() => {
-                    let selectedItem;
-                    
-                    // Проверяем, есть ли активный эффект следующего предмета
-                    if (activeEffects.nextItem) {
-                        selectedItem = items.find(item => item.name === activeEffects.nextItem);
-                        activeEffects.nextItem = null;
-                    } else {
-                        // Вычисление результата на основе шансов
-                        let random = Math.random();
-                        let cumulativeChance = 0;
-                        
-                        // Сначала вычисляем общую сумму шансов доступных предметов
-                        let totalChance = 0;
-                        for (const item of items) {
-                            if (!item.removed) {
-                                totalChance += item.chance;
-                            }
-                        }
-                        
-                        // Нормализуем шансы и выбираем предмет
-                        for (const item of items) {
-                            if (item.removed) continue;
-                            
-                            // Нормализованный шанс с учетом удаленных предметов
-                            const normalizedChance = item.chance / totalChance;
-                            cumulativeChance += normalizedChance;
-                            
-                            if (random <= cumulativeChance) {
-                                selectedItem = item;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    // Если все предметы удалены (маловероятно, но на всякий случай)
-                    if (!selectedItem) {
-                        selectedItem = items[items.length - 1];
-                    }
-                    
-                    // Добавление монет за выигрыш (с учетом множителя)
-                    const reward = Math.floor(selectedItem.reward * activeEffects.coinMultiplier);
-                    coins += reward;
-                    updateCoins();
-                    
-                    // Добавление в открытые предметы, если еще не открыт
-                    if (!discoveredItems.has(selectedItem.name)) {
-                        addDiscoveredItem(selectedItem.name, selectedItem.chance, selectedItem.color);
-                    }
-                    
-                    // Проверка на выпадение сферы (25% шанс или 100% с активным эффектом)
-                    const sphereChance = activeEffects.sphereChance > 0 ? 1 : 0.25;
-                    if (Math.random() <= sphereChance) {
-                        inventory[selectedItem.name]++;
-                        if (activeEffects.sphereChance > 0) activeEffects.sphereChance--;
-                        updateInventoryDisplay();
-                    }
-                    
-                    // Отображение результата (только название без информации о монетах)
-                    result.textContent = selectedItem.name;
-                    result.className = 'result';
-                    result.classList.add(selectedItem.color);
-                    
-                    // Проверка на специальные предметы для анимации
-                    if (selectedItem.name === "БОЖЕСТВЕННЫЙ") {
-                        showDivineAnimation();
-                    } else if (selectedItem.name === "ВЕЧНОСТЬ") {
-                        showEternityAnimation();
-                    } else if (selectedItem.name === "СЕРДЦЕ") {
-                        showHeartAnimation();
-                    } else if (selectedItem.name === "ERROR") {
-                        showErrorAnimation();
-                    }
-                    
-                    // Включение кнопки после перезарядки (с учетом уменьшения)
-                    const actualCooldown = Math.max(0.1, cooldown - activeEffects.cooldownReduction);
-                    setTimeout(() => {
-                        canSpin = true;
-                        spinBtn.disabled = false;
-                    }, actualCooldown * 1000);
-                    
-                }, 300); // Небольшая задержка для ощущения "кручения"
-            }
-            
-            // Добавление открытого предмета в список с отображением шанса
-            function addDiscoveredItem(itemName, chance, colorClass) {
-                const itemElement = document.createElement('div');
-                itemElement.classList.add('item');
-                itemElement.id = `item-${itemName}`;
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = itemName;
-                nameSpan.classList.add(colorClass);
-                
-                const chanceSpan = document.createElement('span');
-                chanceSpan.classList.add('item-chance');
-                chanceSpan.textContent = `${(chance * 100).toFixed(2)}%`;
-                
-                itemElement.appendChild(nameSpan);
-                itemElement.appendChild(chanceSpan);
-                
-                itemsList.appendChild(itemElement);
-                discoveredItems.set(itemName, itemElement);
-            }
-            
-            // Удаление предмета из списка открытых
-            function removeDiscoveredItem(itemName) {
-                if (discoveredItems.has(itemName)) {
-                    const itemElement = discoveredItems.get(itemName);
-                    itemElement.remove();
-                    discoveredItems.delete(itemName);
+                if (itemId === 'chest') {
+                    coins += 100;
+                    showMessage(`Вы купили сундук и получили 100 монет!`);
+                    updateUI();
+                    showShop(); // Обновляем магазин
+                    return;
                 }
-            }
-            
-            // Обновление отображения инвентаря
-            function updateInventoryDisplay() {
-                inventoryGrid.innerHTML = '';
                 
-                for (const [itemName, count] of Object.entries(inventory)) {
-                    if (count > 0) {
-                        const item = items.find(i => i.name === itemName) || { sphere: 'common-sphere', color: 'common' };
-                        
-                        const itemElement = document.createElement('div');
-                        itemElement.classList.add('inventory-item');
-                        itemElement.innerHTML = `
-                            <div class="sphere ${item.sphere || 'common-sphere'}"></div>
-                            <div>${itemName}</div>
-                            <div>${count}</div>
-                        `;
-                        
-                        // Добавляем обработчик клика для использования предметов
-                        if (itemName.includes("Большая сфера") || itemName.includes("Зелье")) {
-                            itemElement.addEventListener('click', () => useInventoryItem(itemName));
-                        }
-                        
-                        inventoryGrid.appendChild(itemElement);
+                const item = shopItems.find(i => i.id === itemId);
+                
+                if (item.type === 'weapon') {
+                    currentWeapon = item.name;
+                    playerDamage = getWeaponDamage(item.name);
+                    showMessage(`Вы купили ${item.name}! Теперь ваш урон: ${playerDamage}.`);
+                } else if (item.type === 'armor') {
+                    if (itemId === 'ironArmor') {
+                        hasIronArmor = true;
+                        hasDiamondArmor = false;
+                        hasGodArmor = false;
+                    } else if (itemId === 'diamondArmor') {
+                        hasDiamondArmor = true;
+                        hasIronArmor = false;
+                        hasGodArmor = false;
+                    } else if (itemId === 'godArmor') {
+                        hasGodArmor = true;
+                        hasIronArmor = false;
+                        hasDiamondArmor = false;
+                    }
+                    showMessage(`Вы купили ${item.name}!`);
+                } else if (item.type === 'consumable') {
+                    inventory.push(item);
+                    showMessage(`Вы купили ${item.name} и добавили в инвентарь!`);
+                } else if (item.type === 'stat') {
+                    if (itemId === 'maxHp') {
+                        playerMaxHealth += 1;
+                        playerHealth = playerMaxHealth;
+                        showMessage(`Вы увеличили максимальное здоровье до ${playerMaxHealth}!`);
+                    }
+                } else if (item.type === 'tool') {
+                    if (itemId === 'pickaxe') {
+                        hasPickaxe = true;
+                        showMessage(`Вы купили кирку! Теперь вы можете добывать золотую руду.`);
                     }
                 }
+                
+                updateUI();
+                showShop(); // Обновляем магазин, чтобы обновить доступность кнопок
+            }
+        }
+        
+        // Функция для получения урона оружия
+        function getWeaponDamage(weaponName) {
+            switch(weaponName) {
+                case 'кулаки': return 1;
+                case 'Перчатка': return 2;
+                case 'меч': return 4;
+                case 'копьё': return 3; // Минимальный урон
+                case 'пистолет': return 5;
+                case 'Перчатка вечности': return 10;
+                case 'Меч бога': return 20;
+                default: return 1;
+            }
+        }
+        
+        // Функция для скрытия магазина
+        function hideShop() {
+            isShopActive = false;
+            shopSection.style.display = 'none';
+            stepBtn.disabled = false;
+            showMessage('Магазин закрыт. Продолжайте путь!');
+        }
+        
+        // Функция для показа золотой руды
+        function showOre() {
+            isOreActive = true;
+            oreSection.style.display = 'block';
+            stepBtn.disabled = true;
+            mineCount = 0;
+            mineCountElement.textContent = mineCount;
+            
+            showMessage('Вы нашли золотую руду! Используйте кирку, чтобы добыть её.');
+        }
+        
+        // Функция для скрытия золотой руды
+        function hideOre() {
+            isOreActive = false;
+            oreSection.style.display = 'none';
+            stepBtn.disabled = false;
+        }
+        
+        // Функция для добычи руды
+        function mineOre() {
+            if (!hasPickaxe) {
+                showMessage('У вас нет кирки! Купите её в магазине.');
+                return;
             }
             
-            // Использование предмета из инвентаря
-            function useInventoryItem(itemName) {
-                if (inventory[itemName] > 0) {
-                    inventory[itemName]--;
-                    
-                    // Применяем эффекты в зависимости от предмета
-                    if (itemName === "Большая сфера обычного") {
-                        activeEffects.nextItem = "Обычный";
-                    } else if (itemName === "Большая сфера необычного") {
-                        activeEffects.nextItem = "Необычный";
-                    } else if (itemName === "Зелье монет") {
-                        activeEffects.coinMultiplier = 1.25;
-                        setTimeout(() => {
-                            activeEffects.coinMultiplier = 1;
-                        }, 60000); // 1 минута
-                    }
-                    // Добавьте другие эффекты здесь
-                    
-                    updateInventoryDisplay();
+            mineCount++;
+            mineCountElement.textContent = mineCount;
+            
+            if (mineCount >= 30) {
+                const coinsEarned = Math.floor(Math.random() * 151) + 150; // 150-300 монет
+                coins += coinsEarned;
+                showMessage(`Вы добыли золотую руду и получили ${coinsEarned} монет!`);
+                hideOre();
+                updateUI();
+            }
+        }
+        
+        // Функция для обновления инвентаря
+        function updateInventory() {
+            inventoryItemsElement.innerHTML = '';
+            
+            if (inventory.length === 0) {
+                inventoryItemsElement.innerHTML = '<p>Инвентарь пуст</p>';
+                return;
+            }
+            
+            // Группируем предметы по типам
+            const groupedItems = {};
+            inventory.forEach(item => {
+                if (!groupedItems[item.id]) {
+                    groupedItems[item.id] = { ...item, count: 1 };
+                } else {
+                    groupedItems[item.id].count++;
                 }
-            }
+            });
             
-            // Крафт предметов
-            function setupCrafting() {
-                craftCommonLargeBtn.addEventListener('click', () => {
-                    if (inventory["Обычный"] >= 10) {
-                        inventory["Обычный"] -= 10;
-                        inventory["Большая сфера обычного"]++;
-                        updateInventoryDisplay();
+            // Отображаем предметы
+            Object.values(groupedItems).forEach(item => {
+                const inventoryItemElement = document.createElement('div');
+                inventoryItemElement.className = 'inventory-item';
+                inventoryItemElement.innerHTML = `
+                    <h4>${item.name}</h4>
+                    <div>${item.description}</div>
+                    <div>Количество: ${item.count}</div>
+                    <button class="inventory-btn" data-id="${item.id}" ${!isPlayerTurn || blackInventoryActive ? 'disabled' : ''}>Использовать</button>
+                `;
+                inventoryItemsElement.appendChild(inventoryItemElement);
+            });
+            
+            // Добавление обработчиков событий для кнопок использования
+            document.querySelectorAll('.inventory-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (blackInventoryActive) {
+                        playerHealth -= 5;
+                        showMessage(`Вы попали в ловушку и потеряли 5 HP!`);
+                        blackInventoryActive = false;
+                        
+                        if (playerHealth <= 0) {
+                            endBattle();
+                            return;
+                        }
+                        
+                        updateUI();
+                        return;
                     }
+                    
+                    const itemId = e.target.getAttribute('data-id');
+                    useItem(itemId);
                 });
-                
-                craftUncommonLargeBtn.addEventListener('click', () => {
-                    if (inventory["Необычный"] >= 10) {
-                        inventory["Необычный"] -= 10;
-                        inventory["Большая сфера необычного"]++;
-                        updateInventoryDisplay();
-                    }
-                });
-                
-                craftCoinPotionBtn.addEventListener('click', () => {
-                    if (inventory["Большая сфера обычного"] >= 1 && inventory["Большая сфера необычного"] >= 1) {
-                        inventory["Большая сфера обычного"] -= 1;
-                        inventory["Большая сфера необычного"] -= 1;
-                        inventory["Зелье монет"]++;
-                        updateInventoryDisplay();
-                    }
-                });
-                // Добавьте другие рецепты крафта здесь
+            });
+        }
+        
+        // Функция для использования предмета из инвентаря
+        function useItem(itemId) {
+            const itemIndex = inventory.findIndex(item => item.id === itemId);
+            if (itemIndex === -1) return;
+            
+            const item = inventory[itemIndex];
+            
+            switch(item.id) {
+                case 'healthSphere':
+                    playerHealth = Math.min(playerHealth + 15, playerMaxHealth);
+                    showMessage(`Вы использовали Сферу жизни и восстановили 15 HP!`);
+                    break;
+                case 'rageSphere':
+                    // Эффект применяется при следующей атаке
+                    showMessage(`Вы использовали Сферу ярости! Следующая атака будет нанесена с удвоенным уроном.`);
+                    break;
+                case 'comboSphere':
+                    playerHealth = Math.min(playerHealth + 10, playerMaxHealth);
+                    showMessage(`Вы использовали Сферу комбо! Восстановлено 10 HP, и следующая атака будет нанесена с удвоенным уроном.`);
+                    break;
+                case 'baton':
+                    playerHealth = Math.min(playerHealth + 10, playerMaxHealth);
+                    showMessage(`Вы использовали Батон! Восстановлено 10 HP, и следующий урон врага будет уменьшен вдвое.`);
+                    break;
+                case 'mushroomBottle':
+                    gainExperience(50);
+                    showMessage(`Вы использовали Бутылочку опята и получили 50 опыта!`);
+                    break;
+                case 'godSphere':
+                    // Эффект применяется при следующей атаке
+                    showMessage(`Вы использовали Сферу бога! Следующая атака будет нанесена с уроном в 5 раз больше, но вы потеряете 5 HP.`);
+                    break;
             }
             
-            // Анимация для божественного предмета
-            function showDivineAnimation() {
-                const overlay = document.createElement('div');
-                overlay.className = 'animation-overlay';
-                
-                const divineText = document.createElement('div');
-                divineText.className = 'divine-text';
-                divineText.textContent = 'БОЖЕСТВЕННЫЙ';
-                
-                overlay.appendChild(divineText);
-                document.body.appendChild(overlay);
-                
-                // Создание взрыва через 5 секунд
-                setTimeout(() => {
-                    // Создаем много частиц взрыва
-                    for (let i = 0; i < 50; i++) {
-                        const explosion = document.createElement('div');
-                        explosion.className = 'explosion';
-                        explosion.style.backgroundColor = '#e74c3c';
-                        explosion.style.left = `${50 + Math.random() * 10 - 5}%`;
-                        explosion.style.top = `${50 + Math.random() * 10 - 5}%`;
-                        explosion.style.animationDelay = `${Math.random() * 0.5}s`;
-                        overlay.appendChild(explosion);
-                    }
-                    
-                    // Удаление оверлея после анимации
-                    setTimeout(() => {
-                        document.body.removeChild(overlay);
-                    }, 1500);
-                }, 5000);
-            }
+            // Удаляем предмет из инвентаря
+            inventory.splice(itemIndex, 1);
             
-            // Анимация для вечности
-            function showEternityAnimation() {
-                const overlay = document.createElement('div');
-                overlay.className = 'animation-overlay';
-                
-                const eternityText = document.createElement('div');
-                eternityText.className = 'eternity-text';
-                eternityText.textContent = 'ВЕЧНОСТЬ';
-                
-                overlay.appendChild(eternityText);
-                document.body.appendChild(overlay);
-                
-                // Постепенное заполнение белым
-                setTimeout(() => {
-                    const whiteOverlay = document.createElement('div');
-                    whiteOverlay.className = 'white-overlay';
-                    
-                    const blackText = document.createElement('div');
-                    blackText.className = 'black-text';
-                    blackText.textContent = 'быть вечным это быть достойный';
-                    
-                    whiteOverlay.appendChild(blackText);
-                    document.body.appendChild(whiteOverlay);
-                    
-                    // Удаление оверлея после анимации
-                    setTimeout(() => {
-                        document.body.removeChild(whiteOverlay);
-                        document.body.removeChild(overlay);
-                    }, 10000);
-                }, 2000);
-            }
+            updateUI();
+        }
+        
+        // Функция для окончания игры
+        function endGame() {
+            endGameSection.style.display = 'block';
+            stepBtn.disabled = true;
+            battleSection.style.display = 'none';
+            shopSection.style.display = 'none';
+            inventorySection.style.display = 'none';
             
-            // Анимация для сердца
-            function showHeartAnimation() {
-                const overlay = document.createElement('div');
-                overlay.className = 'animation-overlay';
-                
-                const heartText = document.createElement('div');
-                heartText.className = 'heart-text';
-                heartText.textContent = 'СЕРДЦЕ';
-                
-                overlay.appendChild(heartText);
-                document.body.appendChild(overlay);
-                
-                // Создание взрыва через 10 секунд
-                setTimeout(() => {
-                    // Создаем много частиц взрыва
-                    for (let i = 0; i < 50; i++) {
-                        const explosion = document.createElement('div');
-                        explosion.className = 'explosion';
-                        explosion.style.backgroundColor = '#e74c3c';
-                        explosion.style.left = `${50 + Math.random() * 10 - 5}%`;
-                        explosion.style.top = `${50 + Math.random() * 10 - 5}%`;
-                        explosion.style.animationDelay = `${Math.random() * 0.5}s`;
-                        overlay.appendChild(explosion);
-                    }
-                    
-                    // Удаление оверлея после анимации
-                    setTimeout(() => {
-                        document.body.removeChild(overlay);
-                    }, 1500);
-                }, 10000);
-            }
+            finalScoreElement.textContent = coins;
+            finalLevelElement.textContent = level;
             
-            // Анимация для ошибки
-            function showErrorAnimation() {
-                const overlay = document.createElement('div');
-                overlay.className = 'animation-overlay';
-                
-                const errorText = document.createElement('div');
-                errorText.className = 'error-text';
-                errorText.textContent = 'ERROR';
-                
-                overlay.appendChild(errorText);
-                document.body.appendChild(overlay);
-                
-                // Эффект лагающих кнопок через 5 секунд
-                setTimeout(() => {
-                    // Здесь будет код для создания эффекта лагающих кнопок
-                    // В реальной реализации это было бы более сложно
-                    
-                    // Создание взрыва через 15 секунд
-                    setTimeout(() => {
-                        // Создаем много частиц взрыва
-                        for (let i = 0; i < 50; i++) {
-                            const explosion = document.createElement('div');
-                            explosion.className = 'explosion';
-                            explosion.style.backgroundColor = '#8e44ad';
-                            explosion.style.left = `${50 + Math.random() * 10 - 5}%`;
-                            explosion.style.top = `${50 + Math.random() * 10 - 5}%`;
-                            explosion.style.animationDelay = `${Math.random() * 0.5}s`;
-                            overlay.appendChild(explosion);
-                        }
-                        
-                        // Удаление оверлея после анимации
-                        setTimeout(() => {
-                            document.body.removeChild(overlay);
-                        }, 2248); // 2.248 секунды
-                    }, 15000);
-                }, 5000);
-            }
+            showMessage('Поздравляем! Вы достигли 1000 шагов и победили игру!');
+        }
+        
+        // Функция для сброса игры
+        function resetGame() {
+            steps = 0;
+            coins = 0;
+            playerHealth = 5;
+            playerMaxHealth = 5;
+            playerDamage = 1;
+            playerBaseDamage = 1;
+            experience = 0;
+            level = 1;
+            expToNextLevel = 100;
+            coinsPerStep = 1;
+            inventory = [];
+            currentWeapon = 'кулаки';
+            hasIronArmor = false;
+            hasDiamondArmor = false;
+            hasGodArmor = false;
+            hasPickaxe = false;
+            maxDodges = 3;
+            dodgesLeft = 3;
             
-            // Улучшение перезарядки
-            function upgradeCooldown() {
-                if (coins >= 25 && cooldownUpgrades < 9) {
-                    coins -= 25;
-                    cooldown -= 0.5;
-                    cooldownUpgrades++;
-                    updateCoins();
-                    updateCooldown();
-                    
-                    if (cooldownUpgrades >= 9) {
-                        upgradeCooldownBtn.disabled = true;
-                        upgradeCooldownBtn.textContent = "Макс. уровень";
-                    }
-                }
-            }
+            // Скрываем все секции и показываем только основную
+            battleSection.style.display = 'none';
+            shopSection.style.display = 'none';
+            levelUpSection.style.display = 'none';
+            inventorySection.style.display = 'none';
+            oreSection.style.display = 'none';
+            endGameSection.style.display = 'none';
             
-            // Удаление предмета
-            function removeItem(itemName) {
-                const item = items.find(i => i.name === itemName);
-                if (item && !item.removed && coins >= getRemoveCost(itemName)) {
-                    coins -= getRemoveCost(itemName);
-                    item.removed = true;
-                    updateCoins();
-                    
-                    // Удаляем предмет из списка открытых
-                    removeDiscoveredItem(itemName);
-                    
-                    // Отключение кнопки после покупки
-                    const button = document.getElementById(`remove-${getItemId(itemName)}`);
-                    if (button) {
-                        button.disabled = true;
-                        button.textContent = "Удалено";
-                    }
-                }
-            }
+            stepBtn.disabled = false;
             
-            // Получение стоимости удаления предмета
-            function getRemoveCost(itemName) {
-                const costMap = {
-                    "Обычный": 100,
-                    "Необычный": 200,
-                    "Редкий": 325,
-                    "Повышенный": 500,
-                    "Эпический": 1000,
-                    "Легендарный": 2000,
-                    "Мифический": 3500,
-                    "Тень/Свет": 5000,
-                    "Фиолетовый": 7500,
-                    "КОРОЛЬ": 10000,
-                    "АНГЕЛ": 25000,
-                    "БОЖЕСТВЕННЫЙ": 50000,
-                    "СЕРДЦЕ": 100000
-                };
-                
-                return costMap[itemName] || 0;
-            }
-            
-            // Получение ID предмета для кнопки
-            function getItemId(itemName) {
-                const idMap = {
-                    "Обычный": "common",
-                    "Необычный": "uncommon",
-                    "Редкий": "rare",
-                    "Повышенный": "improved",
-                    "Эпический": "epic",
-                    "Легендарный": "legendary",
-                    "Мифический": "mythical",
-                    "Тень/Свет": "shadow-light",
-                    "Фиолетовый": "purple",
-                    "КОРОЛЬ": "king",
-                    "АНГЕЛ": "angel",
-                    "БОЖЕСТВЕННЫЙ": "divine",
-                    "СЕРДЦЕ": "heart"
-                };
-                
-                return idMap[itemName] || "";
-            }
-            
-            // Назначение обработчиков событий
-            spinBtn.addEventListener('click', spin);
-            upgradeCooldownBtn.addEventListener('click', upgradeCooldown);
-            removeCommonBtn.addEventListener('click', () => removeItem("Обычный"));
-            removeUncommonBtn.addEventListener('click', () => removeItem("Необычный"));
-            removeRareBtn.addEventListener('click', () => removeItem("Редкий"));
-            removeImprovedBtn.addEventListener('click', () => removeItem("Повышенный"));
-            removeEpicBtn.addEventListener('click', () => removeItem("Эпический"));
-            removeLegendaryBtn.addEventListener('click', () => removeItem("Легендарный"));
-            removeMythicalBtn.addEventListener('click', () => removeItem("Мифический"));
-            removeShadowLightBtn.addEventListener('click', () => removeItem("Тень/Свет"));
-            removePurpleBtn.addEventListener('click', () => removeItem("Фиолетовый"));
-            removeKingBtn.addEventListener('click', () => removeItem("КОРОЛЬ"));
-            removeAngelBtn.addEventListener('click', () => removeItem("АНГЕЛ"));
-            removeDivineBtn.addEventListener('click', () => removeItem("БОЖЕСТВЕННЫЙ"));
-            removeHeartBtn.addEventListener('click', () => removeItem("СЕРДЦЕ"));
-            
-            // Инициализация
-            initInventory();
-            setupCrafting();
-            updateCoins();
-            updateCooldown();
-        });
+            updateUI();
+            showMessage('Игра сброшена. Сделайте шаг, чтобы начать заново!');
+        }
+        
+        // Назначение обработчиков событий
+        stepBtn.addEventListener('click', makeStep);
+        attackBtn.addEventListener('click', playerAttack);
+        defendBtn.addEventListener('click', playerDefend);
+        dodgeBtn.addEventListener('click', playerDodge);
+        continueBtn.addEventListener('click', hideShop);
+        levelUpDodgeBtn.addEventListener('click', () => applyLevelUp('dodge'));
+        levelUpCoinsBtn.addEventListener('click', () => applyLevelUp('coins'));
+        levelUpBonusBtn.addEventListener('click', () => applyLevelUp('bonus'));
+        mineBtn.addEventListener('click', mineOre);
+        oreContinueBtn.addEventListener('click', hideOre);
+        restartBtn.addEventListener('click', resetGame);
+        
+        // Инициализация игры
+        updateUI();
     </script>
 </body>
 </html>
