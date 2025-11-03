@@ -646,27 +646,27 @@
 
     <!-- Аудио элементы для музыки -->
     <audio id="mainMusic" loop>
-        <source src="1-10. The Park On The Old Mountain .mp3">
+        <source src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3" type="audio/mpeg">
     </audio>
     
     <audio id="boss50Music" loop>
-        <source src="1-15. Wait Of The World .mp3">
-    </audio>
-    
-    <audio id="boss100Music" loop>
         <source src="https://assets.mixkit.co/music/preview/mixkit-epic-orchestra-356.mp3" type="audio/mpeg">
     </audio>
     
+    <audio id="boss100Music" loop>
+        <source src="1-21. Search Party  (1).mp3">
+    </audio>
+    
     <audio id="boss250Music" loop>
-        <source src="https://assets.mixkit.co/music/preview/mixkit-tech-battle-intense-669.mp3" type="audio/mpeg">
+        <source src="25. Universal Collapse.mp3">
     </audio>
     
     <audio id="boss500Music" loop>
-        <source src="https://assets.mixkit.co/music/preview/mixkit-dark-ambition-297.mp3" type="audio/mpeg">
+        <source src="35. Hadopelagic Pressure.mp3">
     </audio>
     
     <audio id="boss999Music" loop>
-        <source src="https://assets.mixkit.co/music/preview/mixkit-fantasy-game-background-457.mp3" type="audio/mpeg">
+        <source src="39. Stained, Brutal Calamity.mp3">
     </audio>
 
     <script>
@@ -933,6 +933,9 @@
             stepBtn.disabled = true;
             inventorySection.style.display = 'block';
             
+            // Восстанавливаем урон игрока
+            playerDamage = playerBaseDamage;
+            
             // Включаем основную музыку для обычных врагов
             playMusic('mainMusic');
             
@@ -1154,6 +1157,9 @@
             stepBtn.disabled = true;
             inventorySection.style.display = 'block';
             
+            // Восстанавливаем урон игрока
+            playerDamage = playerBaseDamage;
+            
             enemyType = bossName;
             
             // Включаем музыку в зависимости от босса
@@ -1360,14 +1366,17 @@
             }
             
             // Проверка оружия для мини-игры
-            if (currentWeapon === 'меч' || currentWeapon === 'Меч бога') {
+            if (currentWeapon === 'Меч') {
                 startSwordMinigame();
                 return;
-            } else if (currentWeapon === 'копьё') {
+            } else if (currentWeapon === 'Копьё') {
                 startSpearMinigame();
                 return;
-            } else if (currentWeapon === 'пистолет') {
+            } else if (currentWeapon === 'Пистолет') {
                 startPistolMinigame();
+                return;
+            } else if (currentWeapon === 'Меч бога') {
+                startGodSwordMinigame();
                 return;
             }
             
@@ -1508,13 +1517,9 @@
         
         // Функция для мини-игры меча
         function startSwordMinigame() {
-            const isGodSword = currentWeapon === 'Меч бога';
-            const damage = isGodSword ? 20 : 4;
-            const failDamage = isGodSword ? 10 : 2;
-            
             weaponMinigame.style.display = 'block';
             weaponMinigame.innerHTML = `
-                <h3>Атака ${isGodSword ? 'мечом бога' : 'мечом'}!</h3>
+                <h3>Атака мечом!</h3>
                 <p>Нажмите кнопку "Замах" дважды в течение 4 секунд</p>
                 <div class="minigame-timer">
                     <div class="timer-bar" id="swordTimer"></div>
@@ -1537,8 +1542,8 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     // Неудачная атака
-                    enemyHealth -= failDamage;
-                    showMessage(`Вы не успели сделать полную атаку! Нанесено только ${failDamage} урона.`);
+                    enemyHealth -= 2;
+                    showMessage(`Вы не успели сделать полную атаку! Нанесено только 2 урона.`);
                     weaponMinigame.style.display = 'none';
                     
                     if (enemyHealth <= 0) {
@@ -1562,8 +1567,8 @@
                 if (swings >= 2) {
                     clearInterval(timerInterval);
                     // Успешная атака
-                    enemyHealth -= damage;
-                    showMessage(`Вы успешно атаковали ${isGodSword ? 'мечом бога' : 'мечом'}! Нанесено ${damage} урона.`);
+                    enemyHealth -= 4;
+                    showMessage(`Вы успешно атаковали мечом! Нанесено 4 урона.`);
                     weaponMinigame.style.display = 'none';
                     
                     if (enemyHealth <= 0) {
@@ -1647,11 +1652,11 @@
                     }
                     
                     // Переход хода к врагу
-                    isPlayerTurn = false;
-                    let enemyTurnTime = getEnemyTurnTime();
-                    showMessage(`Враг готовится атаковать...`, false);
-                    setTimeout(enemyTurn, enemyTurnTime * 1000);
-                    updateUI();
+                        isPlayerTurn = false;
+                        let enemyTurnTime = getEnemyTurnTime();
+                        showMessage(`Враг готовится атаковать...`, false);
+                        setTimeout(enemyTurn, enemyTurnTime * 1000);
+                        updateUI();
                 }
             });
         }
@@ -1708,6 +1713,77 @@
                     // Успешная стрельба
                     enemyHealth -= 5;
                     showMessage(`Вы успешно выстрелили! Нанесено 5 урона.`);
+                    weaponMinigame.style.display = 'none';
+                    
+                    if (enemyHealth <= 0) {
+                        endBattle();
+                        return;
+                    }
+                    
+                    // Переход хода к врагу
+                    isPlayerTurn = false;
+                    let enemyTurnTime = getEnemyTurnTime();
+                    showMessage(`Враг готовится атаковать...`, false);
+                    setTimeout(enemyTurn, enemyTurnTime * 1000);
+                    updateUI();
+                }
+            });
+        }
+        
+        // Функция для мини-игры меча бога
+        function startGodSwordMinigame() {
+            weaponMinigame.style.display = 'block';
+            weaponMinigame.innerHTML = `
+                <h3>Атака мечом бога!</h3>
+                <p>Нажмите кнопку "Замах" трижды в течение 3 секунд</p>
+                <div class="minigame-timer">
+                    <div class="timer-bar" id="godSwordTimer"></div>
+                </div>
+                <button class="minigame-btn" id="godSwordSwingBtn">Замах</button>
+                <p>Нажато: <span id="godSwordSwings">0</span>/3</p>
+            `;
+            
+            const godSwordTimer = document.getElementById('godSwordTimer');
+            const godSwordSwingBtn = document.getElementById('godSwordSwingBtn');
+            const godSwordSwingsElement = document.getElementById('godSwordSwings');
+            
+            let swings = 0;
+            let timeLeft = 3;
+            
+            const timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                godSwordTimer.style.width = `${(timeLeft / 3) * 100}%`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    // Неудачная атака
+                    enemyHealth -= 10;
+                    showMessage(`Вы не успели сделать полную атаку! Нанесено только 10 урона.`);
+                    weaponMinigame.style.display = 'none';
+                    
+                    if (enemyHealth <= 0) {
+                        endBattle();
+                        return;
+                    }
+                    
+                    // Переход хода к врагу
+                    isPlayerTurn = false;
+                    let enemyTurnTime = getEnemyTurnTime();
+                    showMessage(`Враг готовится атаковать...`, false);
+                    setTimeout(enemyTurn, enemyTurnTime * 1000);
+                    updateUI();
+                }
+            }, 100);
+            
+            godSwordSwingBtn.addEventListener('click', () => {
+                swings++;
+                godSwordSwingsElement.textContent = swings;
+                
+                if (swings >= 3) {
+                    clearInterval(timerInterval);
+                    // Успешная атака
+                    enemyHealth -= 20;
+                    showMessage(`Вы успешно атаковали мечом бога! Нанесено 20 урона.`);
                     weaponMinigame.style.display = 'none';
                     
                     if (enemyHealth <= 0) {
@@ -2060,6 +2136,7 @@
                 if (item.type === 'weapon') {
                     currentWeapon = item.name;
                     playerDamage = getWeaponDamage(item.name);
+                    playerBaseDamage = playerDamage; // Сохраняем базовый урон
                     showMessage(`Вы купили ${item.name}! Теперь ваш урон: ${playerDamage}.`);
                 } else if (item.type === 'armor') {
                     if (itemId === 'ironArmor') {
@@ -2102,9 +2179,9 @@
             switch(weaponName) {
                 case 'кулаки': return 1;
                 case 'Перчатка': return 2;
-                case 'меч': return 4;
-                case 'копьё': return 3; // Минимальный урон
-                case 'пистолет': return 5;
+                case 'Меч': return 4;
+                case 'Копьё': return 3; // Минимальный урон
+                case 'Пистолет': return 5;
                 case 'Перчатка вечности': return 10;
                 case 'Меч бога': return 20;
                 default: return 1;
@@ -2301,12 +2378,12 @@
         }
         
         // Назначение обработчиков событий для музыки
-        mainMusicBtn.addEventListener('click', () => playMusic('1-10. The Park On The Old Mountain .mp3'));
-        boss50MusicBtn.addEventListener('click', () => playMusic('1-15. Wait Of The World .mp3'));
-        boss100MusicBtn.addEventListener('click', () => playMusic('1-21. Search Party  (1).mp3'));
-        boss250MusicBtn.addEventListener('click', () => playMusic('25. Universal Collapse.mp3'));
-        boss500MusicBtn.addEventListener('click', () => playMusic('35. Hadopelagic Pressure.mp3'));
-        boss999MusicBtn.addEventListener('click', () => playMusic('39. Stained, Brutal Calamity.mp3'));
+        mainMusicBtn.addEventListener('click', () => playMusic('mainMusic'));
+        boss50MusicBtn.addEventListener('click', () => playMusic('boss50Music'));
+        boss100MusicBtn.addEventListener('click', () => playMusic('boss100Music'));
+        boss250MusicBtn.addEventListener('click', () => playMusic('boss250Music'));
+        boss500MusicBtn.addEventListener('click', () => playMusic('boss500Music'));
+        boss999MusicBtn.addEventListener('click', () => playMusic('boss999Music'));
         stopMusicBtn.addEventListener('click', stopMusic);
         
         // Остальные обработчики событий
