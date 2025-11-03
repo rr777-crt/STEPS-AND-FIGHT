@@ -707,6 +707,9 @@
         let bossAbilityInterval;
         let circlesInterval;
         let currentMusic = null;
+        let nextAttackMultiplier = 1; // Множитель для следующей атаки
+        let nextAttackBonusDamage = 0; // Бонусный урон для следующей атаки
+        let nextEnemyDamageReduction = 1; // Уменьшение урона врага для следующей атаки
         
         // Элементы DOM
         const stepsElement = document.getElementById('steps');
@@ -843,17 +846,7 @@
         
         // Функция для совершения шага
         function makeStep() {
-            if (isShopActive) {
-                hideShop();
-                return;
-            }
-            
-            if (isLevelUpActive) {
-                return;
-            }
-            
-            if (isOreActive) {
-                hideOre();
+            if (isShopActive || isBattleActive || isLevelUpActive || isOreActive) {
                 return;
             }
             
@@ -931,7 +924,6 @@
             isBattleActive = true;
             battleSection.style.display = 'block';
             stepBtn.disabled = true;
-            inventorySection.style.display = 'block';
             
             // Восстанавливаем урон игрока
             playerDamage = playerBaseDamage;
@@ -1125,7 +1117,7 @@
             updateUI();
             
             // Запуск эффекта черной кнопки только на 100 шаге и далее
-            if (steps === 100) {
+            if (steps >= 100) {
                 startBlackButtonEffect();
             }
             
@@ -1155,7 +1147,6 @@
             isBattleActive = true;
             battleSection.style.display = 'block';
             stepBtn.disabled = true;
-            inventorySection.style.display = 'block';
             
             // Восстанавливаем урон игрока
             playerDamage = playerBaseDamage;
@@ -1231,11 +1222,16 @@
             isBattleActive = false;
             battleSection.style.display = 'none';
             stepBtn.disabled = false;
-            inventorySection.style.display = 'none';
             weaponMinigame.style.display = 'none';
             
-            // Останавливаем музыку после боя
+            // Сбрасываем множители атаки
+            nextAttackMultiplier = 1;
+            nextAttackBonusDamage = 0;
+            nextEnemyDamageReduction = 1;
+            
+            // Останавливаем музыку после боя и включаем основную
             stopMusic();
+            playMusic('mainMusic');
             
             // Остановка эффектов черных кнопок
             clearInterval(blackAttackInterval);
@@ -1381,33 +1377,11 @@
             }
             
             // Обычная атака
-            let damageDealt = playerDamage;
+            let damageDealt = playerDamage * nextAttackMultiplier + nextAttackBonusDamage;
             
-            // Проверка на сферу ярости
-            const rageSphereIndex = inventory.findIndex(item => item.id === 'rageSphere');
-            if (rageSphereIndex !== -1) {
-                damageDealt *= 2;
-                inventory.splice(rageSphereIndex, 1);
-                showMessage(`Вы использовали Сферу ярости! Урон удвоен.`);
-            }
-            
-            // Проверка на сферу бога
-            const godSphereIndex = inventory.findIndex(item => item.id === 'godSphere');
-            if (godSphereIndex !== -1) {
-                damageDealt *= 5;
-                playerHealth -= 5;
-                inventory.splice(godSphereIndex, 1);
-                showMessage(`Вы использовали Сферу бога! Урон увеличен в 5 раз, но вы потеряли 5 HP.`);
-            }
-            
-            // Проверка на сферу комбо
-            const comboSphereIndex = inventory.findIndex(item => item.id === 'comboSphere');
-            if (comboSphereIndex !== -1) {
-                damageDealt *= 2;
-                playerHealth = Math.min(playerHealth + 10, playerMaxHealth);
-                inventory.splice(comboSphereIndex, 1);
-                showMessage(`Вы использовали Сферу комбо! Урон удвоен и восстановлено 10 HP.`);
-            }
+            // Сбрасываем множители после атаки
+            nextAttackMultiplier = 1;
+            nextAttackBonusDamage = 0;
             
             enemyHealth -= damageDealt;
             showMessage(`Вы атаковали врага и нанесли ${damageDealt} урона!`);
@@ -1476,7 +1450,10 @@
         function enemyTurn() {
             if (isPlayerTurn || !isBattleActive) return;
             
-            let damageDealt = enemyDamage;
+            let damageDealt = enemyDamage * nextEnemyDamageReduction;
+            
+            // Сбрасываем уменьшение урона врага
+            nextEnemyDamageReduction = 1;
             
             // Для ERROR урон случайный от 1 до 4
             if (enemyType === 'ERROR') {
@@ -1490,14 +1467,6 @@
                 damageDealt = Math.floor(damageDealt * 0.6); // -40%
             } else if (hasIronArmor) {
                 damageDealt = Math.floor(damageDealt * 0.8); // -20%
-            }
-            
-            // Проверка на батон
-            const batonIndex = inventory.findIndex(item => item.id === 'baton');
-            if (batonIndex !== -1) {
-                damageDealt = Math.floor(damageDealt / 2);
-                inventory.splice(batonIndex, 1);
-                showMessage(`Вы использовали Батон! Урон врага уменьшен вдвое.`);
             }
             
             playerHealth -= damageDealt;
@@ -1567,8 +1536,12 @@
                 if (swings >= 2) {
                     clearInterval(timerInterval);
                     // Успешная атака
-                    enemyHealth -= 4;
-                    showMessage(`Вы успешно атаковали мечом! Нанесено 4 урона.`);
+                    let damageDealt = 4 * nextAttackMultiplier + nextAttackBonusDamage;
+                    nextAttackMultiplier = 1;
+                    nextAttackBonusDamage = 0;
+                    
+                    enemyHealth -= damageDealt;
+                    showMessage(`Вы успешно атаковали мечом! Нанесено ${damageDealt} урона.`);
                     weaponMinigame.style.display = 'none';
                     
                     if (enemyHealth <= 0) {
@@ -1613,9 +1586,13 @@
                     if (holdTime >= requiredTime) {
                         clearInterval(holdInterval);
                         // Успешная атака
-                        const damage = Math.floor(Math.random() * 4) + 3; // 3-6 урона
-                        enemyHealth -= damage;
-                        showMessage(`Вы успешно атаковали копьём! Нанесено ${damage} урона.`);
+                        const baseDamage = Math.floor(Math.random() * 4) + 3; // 3-6 урона
+                        let damageDealt = baseDamage * nextAttackMultiplier + nextAttackBonusDamage;
+                        nextAttackMultiplier = 1;
+                        nextAttackBonusDamage = 0;
+                        
+                        enemyHealth -= damageDealt;
+                        showMessage(`Вы успешно атаковали копьём! Нанесено ${damageDealt} урона.`);
                         weaponMinigame.style.display = 'none';
                         
                         if (enemyHealth <= 0) {
@@ -1652,11 +1629,11 @@
                     }
                     
                     // Переход хода к врагу
-                        isPlayerTurn = false;
-                        let enemyTurnTime = getEnemyTurnTime();
-                        showMessage(`Враг готовится атаковать...`, false);
-                        setTimeout(enemyTurn, enemyTurnTime * 1000);
-                        updateUI();
+                    isPlayerTurn = false;
+                    let enemyTurnTime = getEnemyTurnTime();
+                    showMessage(`Враг готовится атаковать...`, false);
+                    setTimeout(enemyTurn, enemyTurnTime * 1000);
+                    updateUI();
                 }
             });
         }
@@ -1711,8 +1688,12 @@
                     pistolShootBtn.style.background = 'gray';
                     pistolShootBtn.style.color = 'white';
                     // Успешная стрельба
-                    enemyHealth -= 5;
-                    showMessage(`Вы успешно выстрелили! Нанесено 5 урона.`);
+                    let damageDealt = 5 * nextAttackMultiplier + nextAttackBonusDamage;
+                    nextAttackMultiplier = 1;
+                    nextAttackBonusDamage = 0;
+                    
+                    enemyHealth -= damageDealt;
+                    showMessage(`Вы успешно выстрелили! Нанесено ${damageDealt} урона.`);
                     weaponMinigame.style.display = 'none';
                     
                     if (enemyHealth <= 0) {
@@ -1782,8 +1763,12 @@
                 if (swings >= 3) {
                     clearInterval(timerInterval);
                     // Успешная атака
-                    enemyHealth -= 20;
-                    showMessage(`Вы успешно атаковали мечом бога! Нанесено 20 урона.`);
+                    let damageDealt = 20 * nextAttackMultiplier + nextAttackBonusDamage;
+                    nextAttackMultiplier = 1;
+                    nextAttackBonusDamage = 0;
+                    
+                    enemyHealth -= damageDealt;
+                    showMessage(`Вы успешно атаковали мечом бога! Нанесено ${damageDealt} урона.`);
                     weaponMinigame.style.display = 'none';
                     
                     if (enemyHealth <= 0) {
@@ -2068,32 +2053,13 @@
         function showShop() {
             isShopActive = true;
             shopSection.style.display = 'block';
-            stepBtn.disabled = false; // Можно шагать не покупая
+            stepBtn.disabled = true;
             
             // Заполнение магазина товарами
             shopItemsElement.innerHTML = '';
             
-            // С шансом 10% добавляем сундук
-            if (Math.random() < 0.1) {
-                const chestItem = {
-                    id: 'chest',
-                    name: 'Сундук',
-                    price: 0,
-                    description: '100 монет',
-                    type: 'chest'
-                };
-                
-                const shopItemElement = document.createElement('div');
-                shopItemElement.className = 'shop-item';
-                shopItemElement.innerHTML = `
-                    <h3>${chestItem.name}</h3>
-                    <div>${chestItem.description}</div>
-                    <div>Цена: ${chestItem.price} монет</div>
-                    <button class="shop-btn" data-id="${chestItem.id}" data-price="${chestItem.price}">Купить</button>
-                `;
-                shopItemsElement.appendChild(shopItemElement);
-            }
-            
+            // С шансом 10% добавляем сундук (только при первом показе магазина)
+            let hasChest = false;
             shopItems.forEach(item => {
                 const shopItemElement = document.createElement('div');
                 shopItemElement.className = 'shop-item';
@@ -2122,14 +2088,6 @@
         function buyItem(itemId, price) {
             if (coins >= price) {
                 coins -= price;
-                
-                if (itemId === 'chest') {
-                    coins += 100;
-                    showMessage(`Вы купили сундук и получили 100 монет!`);
-                    updateUI();
-                    showShop(); // Обновляем магазин
-                    return;
-                }
                 
                 const item = shopItems.find(i => i.id === itemId);
                 
@@ -2170,8 +2128,16 @@
                 }
                 
                 updateUI();
-                showShop(); // Обновляем магазин, чтобы обновить доступность кнопок
+                updateShopItems(); // Обновляем доступность кнопок в магазине
             }
+        }
+        
+        // Функция для обновления доступности товаров в магазине
+        function updateShopItems() {
+            document.querySelectorAll('.shop-btn').forEach(btn => {
+                const itemPrice = parseInt(btn.getAttribute('data-price'));
+                btn.disabled = coins < itemPrice;
+            });
         }
         
         // Функция для получения урона оружия
@@ -2301,15 +2267,17 @@
                     showMessage(`Вы использовали Сферу жизни и восстановили 15 HP!`);
                     break;
                 case 'rageSphere':
-                    // Эффект применяется при следующей атаке
+                    nextAttackMultiplier *= 2;
                     showMessage(`Вы использовали Сферу ярости! Следующая атака будет нанесена с удвоенным уроном.`);
                     break;
                 case 'comboSphere':
                     playerHealth = Math.min(playerHealth + 10, playerMaxHealth);
+                    nextAttackMultiplier *= 2;
                     showMessage(`Вы использовали Сферу комбо! Восстановлено 10 HP, и следующая атака будет нанесена с удвоенным уроном.`);
                     break;
                 case 'baton':
                     playerHealth = Math.min(playerHealth + 10, playerMaxHealth);
+                    nextEnemyDamageReduction = 0.5;
                     showMessage(`Вы использовали Батон! Восстановлено 10 HP, и следующий урон врага будет уменьшен вдвое.`);
                     break;
                 case 'mushroomBottle':
@@ -2317,8 +2285,9 @@
                     showMessage(`Вы использовали Бутылочку опята и получили 50 опыта!`);
                     break;
                 case 'godSphere':
-                    // Эффект применяется при следующей атаке
-                    showMessage(`Вы использовали Сферу бога! Следующая атака будет нанесена с уроном в 5 раз больше, но вы потеряете 5 HP.`);
+                    playerHealth -= 5;
+                    nextAttackMultiplier *= 5;
+                    showMessage(`Вы использовали Сферу бога! Следующая атака будет нанесена с уроном в 5 раз больше, но вы потеряли 5 HP.`);
                     break;
             }
             
@@ -2362,16 +2331,24 @@
             hasPickaxe = false;
             maxDodges = 3;
             dodgesLeft = 3;
+            nextAttackMultiplier = 1;
+            nextAttackBonusDamage = 0;
+            nextEnemyDamageReduction = 1;
             
             // Скрываем все секции и показываем только основную
             battleSection.style.display = 'none';
             shopSection.style.display = 'none';
             levelUpSection.style.display = 'none';
-            inventorySection.style.display = 'none';
             oreSection.style.display = 'none';
             endGameSection.style.display = 'none';
             
+            // Инвентарь всегда виден
+            inventorySection.style.display = 'block';
+            
             stepBtn.disabled = false;
+            
+            // Включаем основную музыку
+            playMusic('mainMusic');
             
             updateUI();
             showMessage('Игра сброшена. Сделайте шаг, чтобы начать заново!');
@@ -2400,6 +2377,8 @@
         restartBtn.addEventListener('click', resetGame);
         
         // Инициализация игры
+        inventorySection.style.display = 'block'; // Инвентарь всегда виден
+        playMusic('mainMusic'); // Включаем основную музыку при запуске
         updateUI();
     </script>
 </body>
