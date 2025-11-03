@@ -1122,7 +1122,7 @@
             updateUI();
             
             // Запуск эффекта черной кнопки только на 100 шаге и далее
-            if (steps >= 100) {
+            if (steps === 100) {
                 startBlackButtonEffect();
             }
             
@@ -1260,26 +1260,26 @@
                     coinsGained = 20;
                     expGained = 30;
                 } else if (enemyType === 'пожиратель душ') {
-                    coinsGained = 50;
-                    expGained = 75;
+                    coinsGained = 30;
+                    expGained = 45;
                 } else if (enemyType === 'токсичный') {
-                    coinsGained = 60;
-                    expGained = 90;
+                    coinsGained = 40;
+                    expGained = 60;
                 } else if (enemyType === 'Король слизней') {
                     coinsGained = 100;
                     expGained = 100;
                 } else if (enemyType === 'Теневой лорд') {
-                    coinsGained = 200;
+                    coinsGained = 250;
                     expGained = 200;
                 } else if (enemyType === 'ERROR') {
-                    coinsGained = 500;
-                    expGained = 500;
+                    coinsGained = 404;
+                    expGained = 800;
                 } else if (enemyType === 'БОГ ЗЛА') {
                     coinsGained = 800;
-                    expGained = 800;
+                    expGained = 1800;
                 } else if (enemyType === 'БЕСКОНЕЧНОСТЬ') {
-                    coinsGained = 1500;
-                    expGained = 1500;
+                    coinsGained = 0;
+                    expGained = 0;
                 }
                 
                 coins += coinsGained;
@@ -1426,10 +1426,10 @@
             
             // Механика защиты: 70% шанс получить 1 HP, 30% шанс потерять 2 HP
             if (Math.random() < 0.7) {
-                playerHealth = Math.min(playerHealth + 1, playerMaxHealth);
+                playerHealth = Math.min(playerHealth + 5, playerMaxHealth);
                 showMessage(`Вы успешно защитились и восстановили 1 HP!`);
             } else {
-                playerHealth = Math.max(playerHealth - 2, 0);
+                playerHealth = Math.max(playerHealth - 6, 0);
                 showMessage(`Защита не удалась! Вы потеряли 2 HP.`);
                 
                 if (playerHealth <= 0) {
@@ -2003,7 +2003,7 @@
                     id: 'chest',
                     name: 'Сундук',
                     price: 0,
-                    description: 'Даёт 100 монет',
+                    description: '100 монет',
                     type: 'chest'
                 };
                 
@@ -2301,12 +2301,12 @@
         }
         
         // Назначение обработчиков событий для музыки
-        mainMusicBtn.addEventListener('click', () => playMusic('mainMusic'));
-        boss50MusicBtn.addEventListener('click', () => playMusic('boss50Music'));
-        boss100MusicBtn.addEventListener('click', () => playMusic('boss100Music'));
-        boss250MusicBtn.addEventListener('click', () => playMusic('boss250Music'));
-        boss500MusicBtn.addEventListener('click', () => playMusic('boss500Music'));
-        boss999MusicBtn.addEventListener('click', () => playMusic('boss999Music'));
+        mainMusicBtn.addEventListener('click', () => playMusic('1-10. The Park On The Old Mountain .mp3'));
+        boss50MusicBtn.addEventListener('click', () => playMusic('1-15. Wait Of The World .mp3'));
+        boss100MusicBtn.addEventListener('click', () => playMusic('1-21. Search Party  (1).mp3'));
+        boss250MusicBtn.addEventListener('click', () => playMusic('25. Universal Collapse.mp3'));
+        boss500MusicBtn.addEventListener('click', () => playMusic('35. Hadopelagic Pressure.mp3'));
+        boss999MusicBtn.addEventListener('click', () => playMusic('39. Stained, Brutal Calamity.mp3'));
         stopMusicBtn.addEventListener('click', stopMusic);
         
         // Остальные обработчики событий
