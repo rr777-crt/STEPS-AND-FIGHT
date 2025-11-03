@@ -646,11 +646,11 @@
 
     <!-- Аудио элементы для музыки -->
     <audio id="mainMusic" loop>
-        <source src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3" type="audio/mpeg">
+        <source src="1-10. The Park On The Old Mountain .mp3">
     </audio>
     
     <audio id="boss50Music" loop>
-        <source src="https://assets.mixkit.co/music/preview/mixkit-sci-fi-battle-659.mp3" type="audio/mpeg">
+        <source src="1-15. Wait Of The World .mp3">
     </audio>
     
     <audio id="boss100Music" loop>
@@ -767,13 +767,13 @@
             { id: 'healthSphere', name: 'Сфера жизни', price: 50, description: 'Лечит 15 HP', type: 'consumable' },
             { id: 'rageSphere', name: 'Сфера ярости', price: 50, description: 'Удваивает урон следующей атаки', type: 'consumable' },
             { id: 'comboSphere', name: 'Сфера комбо', price: 70, description: '+10 HP и след атака в 2 раза больше урона', type: 'consumable' },
-            { id: 'sword', name: 'Меч', price: 250, description: 'Наносит 4 урона (требует мини-игру)', type: 'weapon' },
+            { id: 'sword', name: 'Меч', price: 250, description: 'Наносит 4 урона', type: 'weapon' },
             { id: 'ironArmor', name: 'Железная броня', price: 200, description: 'Уменьшает урон врагов на 20%', type: 'armor' },
             { id: 'baton', name: 'Батон', price: 325, description: 'Лечит 10 HP + следующий урон врага уменьшен вдвое', type: 'consumable' },
             { id: 'mushroomBottle', name: 'Бутылочка опята', price: 100, description: 'Даёт 50 опыта', type: 'consumable' },
             { id: 'godSphere', name: 'Сфера бога', price: 333, description: 'Жертвует 5 HP, следующая атака наносит 5x урон', type: 'consumable' },
-            { id: 'spear', name: 'Копьё', price: 500, description: 'Наносит 3-6 урона (требует мини-игру)', type: 'weapon' },
-            { id: 'pistol', name: 'Пистолет', price: 750, description: 'Наносит 5 урона (требует мини-игру)', type: 'weapon' },
+            { id: 'spear', name: 'Копьё', price: 500, description: 'Наносит 3-6 урона ', type: 'weapon' },
+            { id: 'pistol', name: 'Пистолет', price: 750, description: 'Наносит 5 урона', type: 'weapon' },
             { id: 'eternityGlove', name: 'Перчатка вечности', price: 1500, description: 'Наносит 10 урона', type: 'weapon' },
             { id: 'diamondArmor', name: 'Броня алмаза', price: 1000, description: 'Уменьшает урон врагов на 40%', type: 'armor' },
             { id: 'godSword', name: 'Меч бога', price: 2500, description: 'Наносит 20 урона (требует мини-игру)', type: 'weapon' },
@@ -1321,8 +1321,8 @@
                 dodgesLeft = maxDodges;
                 showMessage(`Вы увеличили количество уворотов до ${maxDodges}!`);
             } else if (choice === 'coins') {
-                coinsPerStep += 3;
-                showMessage(`Теперь вы получаете на 3 монеты больше за каждый шаг!`);
+                coinsPerStep += 5;
+                showMessage(`Теперь вы получаете на 5 монет больше за каждый шаг!`);
             } else if (choice === 'bonus') {
                 coins += 100;
                 showMessage(`Вы получили 100 монет!`);
@@ -1425,7 +1425,7 @@
             if (!isPlayerTurn || !isBattleActive) return;
             
             // Механика защиты: 70% шанс получить 1 HP, 30% шанс потерять 2 HP
-            if (Math.random() < 0.7) {
+            if (Math.random() < 0.6) {
                 playerHealth = Math.min(playerHealth + 5, playerMaxHealth);
                 showMessage(`Вы успешно защитились и восстановили 1 HP!`);
             } else {
