@@ -462,6 +462,22 @@
             cursor: pointer;
         }
         
+        .music-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .music-btn {
+            padding: 8px 15px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
         /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
             .game-content {
@@ -490,6 +506,15 @@
     <div class="game-container">
         <header>
             <h1>Шаг за шагом</h1>
+            <div class="music-controls">
+                <button class="music-btn" id="mainMusicBtn">Основная</button>
+                <button class="music-btn" id="boss50MusicBtn">Король слизней</button>
+                <button class="music-btn" id="boss100MusicBtn">Теневой лорд</button>
+                <button class="music-btn" id="boss250MusicBtn">ERROR</button>
+                <button class="music-btn" id="boss500MusicBtn">Бог зла</button>
+                <button class="music-btn" id="boss999MusicBtn">Бесконечность</button>
+                <button class="music-btn" id="stopMusicBtn">Выкл музыку</button>
+            </div>
         </header>
         
         <div class="game-content">
@@ -619,6 +644,31 @@
         <!-- Кружки для способности босса будут добавляться сюда -->
     </div>
 
+    <!-- Аудио элементы для музыки -->
+    <audio id="mainMusic" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="boss50Music" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-sci-fi-battle-659.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="boss100Music" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-epic-orchestra-356.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="boss250Music" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-tech-battle-intense-669.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="boss500Music" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-dark-ambition-297.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="boss999Music" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-fantasy-game-background-457.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         // Игровые переменные
         let steps = 0;
@@ -656,6 +706,7 @@
         let toxicDamageInterval;
         let bossAbilityInterval;
         let circlesInterval;
+        let currentMusic = null;
         
         // Элементы DOM
         const stepsElement = document.getElementById('steps');
@@ -699,7 +750,16 @@
         const finalLevelElement = document.getElementById('finalLevel');
         const restartBtn = document.getElementById('restartBtn');
         
-        // Магазин товаров (ОБНОВЛЕНО - добавлена кирка)
+        // Элементы музыки
+        const mainMusicBtn = document.getElementById('mainMusicBtn');
+        const boss50MusicBtn = document.getElementById('boss50MusicBtn');
+        const boss100MusicBtn = document.getElementById('boss100MusicBtn');
+        const boss250MusicBtn = document.getElementById('boss250MusicBtn');
+        const boss500MusicBtn = document.getElementById('boss500MusicBtn');
+        const boss999MusicBtn = document.getElementById('boss999MusicBtn');
+        const stopMusicBtn = document.getElementById('stopMusicBtn');
+        
+        // Магазин товаров
         const shopItems = [
             { id: 'maxHp', name: '+1 к макс HP', price: 25, description: 'Увеличивает максимальное здоровье на 1', type: 'stat' },
             { id: 'pickaxe', name: 'Кирка', price: 10, description: 'Позволяет добывать золотую руду', type: 'tool' },
@@ -719,6 +779,34 @@
             { id: 'godSword', name: 'Меч бога', price: 2500, description: 'Наносит 20 урона (требует мини-игру)', type: 'weapon' },
             { id: 'godArmor', name: 'Броня бога', price: 3000, description: 'Уменьшает урон врагов на 60%', type: 'armor' }
         ];
+        
+        // Функция для воспроизведения музыки
+        function playMusic(musicId) {
+            // Останавливаем текущую музыку
+            if (currentMusic) {
+                currentMusic.pause();
+                currentMusic.currentTime = 0;
+            }
+            
+            // Включаем новую музыку
+            const music = document.getElementById(musicId);
+            if (music) {
+                music.volume = 0.5; // Устанавливаем громкость 50%
+                music.play().catch(e => {
+                    console.log("Автовоспроизведение заблокировано:", e);
+                });
+                currentMusic = music;
+            }
+        }
+        
+        // Функция для остановки музыки
+        function stopMusic() {
+            if (currentMusic) {
+                currentMusic.pause();
+                currentMusic.currentTime = 0;
+                currentMusic = null;
+            }
+        }
         
         // Функция обновления интерфейса
         function updateUI() {
@@ -844,6 +932,9 @@
             battleSection.style.display = 'block';
             stepBtn.disabled = true;
             inventorySection.style.display = 'block';
+            
+            // Включаем основную музыку для обычных врагов
+            playMusic('mainMusic');
             
             // Определение типа врага в зависимости от шагов
             let enemyChance = Math.random();
@@ -1065,26 +1156,38 @@
             
             enemyType = bossName;
             
-            if (bossName === 'Король слизней') {
-                enemyMaxHealth = 50;
-                enemyHealth = 50;
-                enemyDamage = 4;
-            } else if (bossName === 'Теневой лорд') {
-                enemyMaxHealth = 100;
-                enemyHealth = 100;
-                enemyDamage = 2;
-            } else if (bossName === 'ERROR') {
-                enemyMaxHealth = 404;
-                enemyHealth = 404;
-                enemyDamage = 1; // Будет случайным от 1 до 4
-            } else if (bossName === 'БОГ ЗЛА') {
-                enemyMaxHealth = 222;
-                enemyHealth = 222;
-                enemyDamage = 3;
-            } else if (bossName === 'БЕСКОНЕЧНОСТЬ') {
-                enemyMaxHealth = 1000;
-                enemyHealth = 1000;
-                enemyDamage = 5;
+            // Включаем музыку в зависимости от босса
+            switch(bossName) {
+                case 'Король слизней':
+                    playMusic('boss50Music');
+                    enemyMaxHealth = 50;
+                    enemyHealth = 50;
+                    enemyDamage = 4;
+                    break;
+                case 'Теневой лорд':
+                    playMusic('boss100Music');
+                    enemyMaxHealth = 100;
+                    enemyHealth = 100;
+                    enemyDamage = 2;
+                    break;
+                case 'ERROR':
+                    playMusic('boss250Music');
+                    enemyMaxHealth = 404;
+                    enemyHealth = 404;
+                    enemyDamage = 1; // Будет случайным от 1 до 4
+                    break;
+                case 'БОГ ЗЛА':
+                    playMusic('boss500Music');
+                    enemyMaxHealth = 222;
+                    enemyHealth = 222;
+                    enemyDamage = 3;
+                    break;
+                case 'БЕСКОНЕЧНОСТЬ':
+                    playMusic('boss999Music');
+                    enemyMaxHealth = 1000;
+                    enemyHealth = 1000;
+                    enemyDamage = 5;
+                    break;
             }
             
             // Сброс параметров боя
@@ -1124,6 +1227,9 @@
             stepBtn.disabled = false;
             inventorySection.style.display = 'none';
             weaponMinigame.style.display = 'none';
+            
+            // Останавливаем музыку после боя
+            stopMusic();
             
             // Остановка эффектов черных кнопок
             clearInterval(blackAttackInterval);
@@ -1306,26 +1412,7 @@
             isPlayerTurn = false;
             
             // Определение времени хода врага
-            let enemyTurnTime;
-            if (enemyType === 'слизень') {
-                enemyTurnTime = Math.random() * 0.75 + 0.75; // 0.75 - 1.5 секунды
-            } else if (enemyType === 'Король слизней') {
-                enemyTurnTime = Math.random() * 0.25 + 0.5; // 0.5 - 0.75 секунды
-            } else if (enemyType === 'Теневой лорд') {
-                enemyTurnTime = 1; // 1 секунда
-            } else if (enemyType === 'ERROR') {
-                enemyTurnTime = Math.random() * 1.0 + 0.4; // 0.4 - 1.4 секунды
-            } else if (enemyType === 'пожиратель душ') {
-                enemyTurnTime = Math.random() * 1.0 + 1.0; // 1.0 - 2.0 секунды
-            } else if (enemyType === 'токсичный') {
-                enemyTurnTime = Math.random() * 0.1 + 1.0; // 1.0 - 1.1 секунды
-            } else if (enemyType === 'БОГ ЗЛА') {
-                enemyTurnTime = Math.random() * 0.9 + 0.6; // 0.6 - 1.5 секунды
-            } else if (enemyType === 'БЕСКОНЕЧНОСТЬ') {
-                enemyTurnTime = Math.random() * 0.3 + 0.3; // 0.3 - 0.6 секунды
-            } else {
-                enemyTurnTime = Math.random() * 1.5 + 1.5; // 1.5 - 3 секунды
-            }
+            let enemyTurnTime = getEnemyTurnTime();
             
             showMessage(`Враг готовится атаковать...`, false);
             
@@ -1355,26 +1442,7 @@
             isPlayerTurn = false;
             
             // Определение времени хода врага
-            let enemyTurnTime;
-            if (enemyType === 'слизень') {
-                enemyTurnTime = Math.random() * 0.75 + 0.75; // 0.75 - 1.5 секунды
-            } else if (enemyType === 'Король слизней') {
-                enemyTurnTime = Math.random() * 0.25 + 0.5; // 0.5 - 0.75 секунды
-            } else if (enemyType === 'Теневой лорд') {
-                enemyTurnTime = 1; // 1 секунда
-            } else if (enemyType === 'ERROR') {
-                enemyTurnTime = Math.random() * 1.0 + 0.4; // 0.4 - 1.4 секунды
-            } else if (enemyType === 'пожиратель душ') {
-                enemyTurnTime = Math.random() * 1.0 + 1.0; // 1.0 - 2.0 секунды
-            } else if (enemyType === 'токсичный') {
-                enemyTurnTime = Math.random() * 0.1 + 1.0; // 1.0 - 1.1 секунды
-            } else if (enemyType === 'БОГ ЗЛА') {
-                enemyTurnTime = Math.random() * 0.9 + 0.6; // 0.6 - 1.5 секунды
-            } else if (enemyType === 'БЕСКОНЕЧНОСТЬ') {
-                enemyTurnTime = Math.random() * 0.3 + 0.3; // 0.3 - 0.6 секунды
-            } else {
-                enemyTurnTime = Math.random() * 1.5 + 1.5; // 1.5 - 3 секунды
-            }
+            let enemyTurnTime = getEnemyTurnTime();
             
             showMessage(`Враг готовится атаковать...`, false);
             
@@ -2232,7 +2300,16 @@
             showMessage('Игра сброшена. Сделайте шаг, чтобы начать заново!');
         }
         
-        // Назначение обработчиков событий
+        // Назначение обработчиков событий для музыки
+        mainMusicBtn.addEventListener('click', () => playMusic('mainMusic'));
+        boss50MusicBtn.addEventListener('click', () => playMusic('boss50Music'));
+        boss100MusicBtn.addEventListener('click', () => playMusic('boss100Music'));
+        boss250MusicBtn.addEventListener('click', () => playMusic('boss250Music'));
+        boss500MusicBtn.addEventListener('click', () => playMusic('boss500Music'));
+        boss999MusicBtn.addEventListener('click', () => playMusic('boss999Music'));
+        stopMusicBtn.addEventListener('click', stopMusic);
+        
+        // Остальные обработчики событий
         stepBtn.addEventListener('click', makeStep);
         attackBtn.addEventListener('click', playerAttack);
         defendBtn.addEventListener('click', playerDefend);
